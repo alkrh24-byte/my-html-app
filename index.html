@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>تطبيقي الكامل</title>
+  <title>تطبيقي التفاعلي</title>
 
   <!-- إعدادات تجعل الصفحة تعمل كتطبيق موبايل -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -26,18 +26,13 @@
       text-align: center;
       overflow: hidden;
       user-select: none;
-      overscroll-behavior: contain; /* يمنع السحب لتحديث الصفحة */
+      overscroll-behavior: contain;
       touch-action: none;
     }
 
     h1 {
-      font-size: 2.2em;
+      font-size: 2em;
       margin-bottom: 15px;
-    }
-
-    p {
-      font-size: 1.1em;
-      margin-bottom: 20px;
     }
 
     button {
@@ -46,10 +41,11 @@
       border: none;
       border-radius: 12px;
       padding: 12px 25px;
-      font-size: 1.2em;
+      font-size: 1.1em;
       cursor: pointer;
       font-weight: bold;
-      transition: 0.2s;
+      margin: 10px;
+      transition: 0.3s;
     }
 
     button:hover {
@@ -58,24 +54,52 @@
 
     button:active {
       opacity: 0.8;
+      transform: scale(0.95);
+    }
+
+    /* صندوق الرسائل المنبثقة (toast) */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 1em;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s, transform 0.5s;
     }
   </style>
 </head>
 <body>
   <div>
-    <h1> "لمهندس/عرفات احمد دبوان، ترقبو المزيد 🥰" مرحبًا بك في تطبيقي 🎉</h1>
-    <p>تجربة تطبيق ويب كامل الشاشة بدون أدوات المتصفح</p>
-    <button onclick="showMessage('تم الضغط على الزر!')">اضغط هنا</button>
-    <button onclick="showMessage('زر آخر يعمل تمامًا!')">زر ثاني</button>
+    <h1> "لمهندس/عرفات احمد دبوان" مرحبًا بك في تطبيقي التفاعلي 🎉</h1>
+    <p>اضغط الأزرار لترى الرسائل داخل الصفحة بدون تنبيهات مزعجة</p>
+    <button onclick="showToast('لقد ضغطت الزر الأول!')">زر 1</button>
+    <button onclick="showToast('لقد ضغطت الزر الثاني!')">زر 2</button>
+    <button onclick="showToast('زر ثالث يعمل تمامًا!')">زر 3</button>
   </div>
 
+  <div id="toast"></div>
+
   <script>
-    function showMessage(msg) {
-      // هذه الرسالة تظهر عند الضغط على أي زر
-      alert(msg);
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.opacity = 1;
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      
+      // إخفاء الرسالة بعد 2.5 ثانية
+      setTimeout(() => {
+        toast.style.opacity = 0;
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
+      }, 2500);
     }
 
-    // منع الرجوع للخلف أو السحب العلوي
+    // منع السحب لتحديث الصفحة
     window.addEventListener('touchmove', function(e) {
       e.preventDefault();
     }, { passive: false });
