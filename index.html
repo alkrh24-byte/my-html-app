@@ -1,872 +1,148 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>نظام محاسبة 🌐 المهندس/عرفات احمد ⚛️ متكامل - واجهة تجريبية (Firestore)</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  :root{--primary: #10b981; /* زمردي */ --secondary: #3b82f6; /* أزرق */ --muted: #6b7280; --bg:#f3f4f6}
-  body{font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); margin:0; padding:0; direction:rtl; text-align:right;}
-  header{background:var(--primary); color:#fff; padding:16px 18px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-  h1{font-size:1.75rem; margin:0;}
-  h3{font-size:1.25rem; margin-top:0.75rem; margin-bottom:0.5rem; border-bottom:2px solid #e5eeef; padding-bottom:4px; color:#1f2937}
-  .container{padding:20px; max-width:1400px; margin:auto}
-  .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px; justify-content:center}
-  .tabs button{background:#fff; border:1px solid #ddd; padding:10px 14px; border-radius:8px; cursor:pointer; transition:all 0.3s; font-weight:600}
-  .tabs button.active{background:var(--secondary); color:#fff; border-color:var(--secondary); box-shadow:0 4px 6px rgba(59,130,246,0.3)}
-  .tabs button:hover:not(.active){background:#f9fafb}
-  .panel{display:none; background:#fff; padding:20px; border-radius:10px; border:1px solid #e5e7eb; box-shadow:0 10px 15px -3px rgba(0, 0, 0, 0.1)}
-  .panel.active{display:block}
-  table{width:100%; border-collapse:collapse; margin-top:12px; font-size:0.9rem;}
-  th,td{border:1px solid #d1d5db; padding:10px; text-align:center; vertical-align:middle;}
-  th{background:var(--secondary); color:#fff; font-weight:600; white-space:nowrap;}
-  input,select,textarea{width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:4px; transition:border-color 0.2s}
-  input:focus,select:focus,textarea:focus{border-color:var(--primary); outline:none;}
-  .row{display:flex; gap:12px; margin-bottom:12px}
-  .col{flex:1; min-width:0;}
-  .actions{margin-top:15px; display:flex; gap:10px; justify-content:flex-start;}
-  button.primary{background:var(--primary); color:#fff; border:none; padding:10px 16px; border-radius:6px; font-weight:600; transition:background 0.2s}
-  button.primary:hover{background:#059669;}
-  button.ghost{background:#f3f4f6; border:1px solid #d1d5db; color:#1f2937; padding:10px 16px; border-radius:6px; transition:background 0.2s}
-  button.ghost:hover{background:#e5e7eb;}
-  #popup{display:none; position:fixed; right:50%; transform:translateX(50%); top:10%; width:90%; max-width:600px; max-height:80%; background:#fff; border:3px solid var(--primary); z-index:999; padding:20px; border-radius:10px; box-shadow:0 10px 20px rgba(0,0,0,0.2); overflow:auto;}
-  #popup table th{background:var(--primary)}
-  footer{padding:15px; text-align:center; color:var(--muted); margin-top:20px;}
-  .small-btn{padding:5px 8px; font-size:0.8rem;}
-  .loading-overlay{position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.7); display:flex; justify-content:center; align-items:center; z-index:1000; font-size:1.5rem; font-weight:600; color:var(--primary); display:none;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المهندس عرفات أحمد دبوان</title>
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      direction: rtl;
+      background: #f4f6f8;
+      text-align: center;
+      padding: 60px;
+    }
+
+    h1 {
+      color: #222;
+    }
+
+    button {
+      background: linear-gradient(45deg, #007bff, #0056b3);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      margin: 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(45deg, #0056b3, #00408a);
+    }
+
+    /* النوافذ المنبثقة */
+    .modal {
+      display: none; /* مخفي افتراضيًا */
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.6);
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 25px;
+      border-radius: 15px;
+      width: 85%;
+      max-width: 600px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      text-align: right;
+      animation: slideIn 0.4s;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .close {
+      color: #aaa;
+      float: left;
+      font-size: 26px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #000;
+    }
+
+    p {
+      line-height: 1.8;
+      font-size: 18px;
+      color: #333;
+    }
+
+  </style>
 </head>
 <body>
-<div class="loading-overlay" id="loadingOverlay">
-  جاري الاتصال بقاعدة البيانات...
-</div>
-<header>
-  <h1>نظام محاسبة متكامل - واجهة تجريبية (Firestore)</h1>
-</header>
-<div class="container">
-  <div class="tabs" id="tabs">
-    <button class="active" data-panel="itemsPanel">الأصناف</button>
-    <button data-panel="suppliersPanel">الموردون</button>
-    <button data-panel="customersPanel">العملاء</button>
-    <button data-panel="purchasesPanel">فاتورة مشتريات</button>
-    <button data-panel="salesPanel">فاتورة مبيعات</button>
-    <button data-panel="journalPanel">القيود اليومية</button>
+
+  <h1>مرحباً بكم 👋</h1>
+  <p>اضغط على أحد الأزرار لعرض المعلومات:</p>
+
+  <button onclick="openModal(1)">زر 1</button>
+  <button onclick="openModal(2)">زر 2</button>
+
+  <!-- النافذة المنبثقة -->
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <div id="modalText"></div>
+    </div>
   </div>
 
-  <!-- الأصناف -->
-  <section id="itemsPanel" class="panel active">
-    <h3>📦 الأصناف</h3>
-    <div class="actions">
-      <button class="primary" onclick="addItemRow()">➕ إضافة صنف</button>
-      <button class="ghost" onclick="recomputeJournal()">🔁 إعادة توليد القيود (للتجربة)</button>
-    </div>
-    <table id="itemsTable">
-      <thead><tr><th>رقم_الصنف</th><th>كود</th><th>اسم_الصنف</th><th>الفئة</th><th>الوحدة</th><th>سعر_الشراء</th><th>سعر_البيع</th><th>الحد_الأدنى</th><th>حالة المخزون</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <!-- الموردون -->
-  <section id="suppliersPanel" class="panel">
-    <h3>🏭 الموردون</h3>
-    <div class="actions">
-      <button class="primary" onclick="addSupplierRow()">➕ إضافة مورد</button>
-    </div>
-    <table id="suppliersTable">
-      <thead><tr><th>رقم_المورد</th><th>اسم</th><th>الهاتف</th><th>العنوان</th><th>الرصيد</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <!-- العملاء -->
-  <section id="customersPanel" class="panel">
-    <h3>👥 العملاء</h3>
-    <div class="actions">
-      <button class="primary" onclick="addCustomerRow()">➕ إضافة عميل</button>
-    </div>
-    <table id="customersTable">
-      <thead><tr><th>رقم_العميل</th><th>اسم</th><th>الهاتف</th><th>العنوان</th><th>الرصيد</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <!-- مشتريات -->
-  <section id="purchasesPanel" class="panel">
-    <h3>📄 فاتورة مشتريات</h3>
-    <div class="row">
-      <div class="col">
-        <label>طريقة الدفع:</label>
-        <select id="purchasePayment" onchange="togglePurchaseSupplier()">
-          <option value="cash">نقدًا (صندوق)</option>
-          <option value="bank">بنك</option>
-          <option value="credit">آجل (ذمم دائنة)</option>
-        </select>
-      </div>
-      <div class="col" id="purchaseSupplierDiv" style="display:none">
-        <label>المورد (اسم/رقم):</label>
-        <input id="purchaseSupplier" placeholder="ابحث أو أدخل اسم المورد" onclick="openPopupFor(this, 'suppliers')">
-      </div>
-      <div class="col">
-        <label>مصاريف النقل:</label>
-        <input id="purchaseTransport" type="number" value="0" oninput="recalcPurchaseGrand()">
-      </div>
-      <div class="col">
-        <label>خصم مكتسب:</label>
-        <input id="purchaseDiscount" type="number" value="0" oninput="recalcPurchaseGrand()">
-      </div>
-    </div>
-    <table id="purchaseItemsTable">
-      <thead><tr><th>رقم_الصنف</th><th>اسم_الصنف</th><th>الكمية</th><th>سعر_الشراء</th><th>الإجمالي</th><th>اختيار</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="actions">
-      <button class="primary" onclick="addPurchaseRow()">➕ إضافة سطر</button>
-      <button class="ghost" onclick="savePurchase()">💾 حفظ الفاتورة (قيد يومية)</button>
-    </div>
-    <h4>الإجمالي الكلي: <span id="purchaseGrand" class="text-xl font-bold text-red-600">0</span></h4>
-  </section>
-
-  <!-- مبيعات -->
-  <section id="salesPanel" class="panel">
-    <h3>📄 فاتورة مبيعات</h3>
-    <div class="row">
-      <div class="col">
-        <label>طريقة الدفع:</label>
-        <select id="salesPayment" onchange="toggleSalesCustomer()">
-          <option value="cash">نقدًا (صندوق)</option>
-          <option value="bank">بنك</option>
-          <option value="credit">آجل (ذمم مدينة)</option>
-        </select>
-      </div>
-      <div class="col" id="salesCustomerDiv" style="display:none">
-        <label>العميل (اسم/رقم):</label>
-        <input id="salesCustomer" placeholder="ابحث أو أدخل اسم العميل" onclick="openPopupFor(this, 'customers')">
-      </div>
-      <div class="col">
-        <label>مصاريف التحميل:</label>
-        <input id="salesShipping" type="number" value="0" oninput="recalcSalesGrand()">
-      </div>
-      <div class="col">
-        <label>خصم مسموح:</label>
-        <input id="salesDiscount" type="number" value="0" oninput="recalcSalesGrand()">
-      </div>
-    </div>
-    <table id="salesItemsTable">
-      <thead><tr><th>رقم_الصنف</th><th>اسم_الصنف</th><th>الكمية</th><th>سعر_البيع</th><th>الإجمالي</th><th>اختيار</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="actions">
-      <button class="primary" onclick="addSalesRow()">➕ إضافة سطر</button>
-      <button class="ghost" onclick="saveSale()">💾 حفظ الفاتورة (قيد يومية)</button>
-    </div>
-    <h4>الإجمالي الكلي: <span id="salesGrand" class="text-xl font-bold text-red-600">0</span></h4>
-  </section>
-
-  <!-- القيود اليومية -->
-  <section id="journalPanel" class="panel">
-    <h3>📘 القيود اليومية (عرض تجريبي)</h3>
-    <p class="text-sm text-gray-500 mb-4">هذا السجل يجمع قيود اليومية التي يتم توليدها تلقائياً عند حفظ فواتير المشتريات والمبيعات.</p>
-    <table id="journalTable"><thead><tr><th>رقم_القيد</th><th>التاريخ</th><th>الوصف</th><th>مدين</th><th>دائن</th></tr></thead><tbody></tbody></table>
-  </section>
-</div>
-
-<!-- Popup اختيار الأصناف/الموردين/العملاء -->
-<div id="popup">
-  <h3 id="popupTitle">قائمة</h3>
-  <div style="margin-bottom:8px"><input id="popupSearch" placeholder="ابحث..." oninput="renderPopupList()"></div>
-  <table id="popupTable"><thead><tr><th>الرقم</th><th>الاسم</th><th>معلومة</th><th>اختيار</th></tr></thead><tbody></tbody></table>
-  <div style="margin-top:15px;text-align:left"><button class="ghost" onclick="closePopup()">إغلاق</button></div>
-</div>
-
-<footer>
-  نظام محاسبة تجريبي باستخدام Firebase Firestore لضمان استمرار البيانات وتحديثها في الوقت الحقيقي. معرف المستخدم الحالي: <span id="userIdDisplay" class="font-mono text-xs text-blue-700">جاري التحميل...</span>
-</footer>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, onSnapshot, collection, query, where, runTransaction, getDocs, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-  import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-  setLogLevel('Debug'); // تفعيل تسجيل تفاصيل Firestore
-
-  // متغيرات بيئة العمل العالمية (مُقدمة من النظام)
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-acc-app';
-  const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-  const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-  /* ---------------- بيانات عالمية وتهيئة ---------------- */
-  let db, auth;
-  let userId = null;
-  let isAuthReady = false;
-
-  // البيانات التي سيتم تحميلها عبر onSnapshot
-  let items = [];
-  let suppliers = [];
-  let customers = [];
-  let purchases = [];
-  let sales = [];
-  let journal = [];
-
-  // جلب العناصر الرئيسية
-  const loadingOverlay = document.getElementById('loadingOverlay');
-  const userIdDisplay = document.getElementById('userIdDisplay');
-
-  // عرض شاشة التحميل
-  loadingOverlay.style.display = 'flex';
-
-  // تهيئة Firebase والمصادقة
-  async function initFirebaseAndAuth() {
-    try {
-      const app = initializeApp(firebaseConfig);
-      db = getFirestore(app);
-      auth = getAuth(app);
-
-      // المصادقة
-      if (initialAuthToken) {
-        await signInWithCustomToken(auth, initialAuthToken);
-      } else {
-        await signInAnonymously(auth);
+  <script>
+    function openModal(num) {
+      let content = "";
+      if (num === 1) {
+        content = `
+          <h2>مرحباً بكم!</h2>
+          <p>
+          أنا المهندس <strong>عرفات أحمد دبوان</strong>، أعمل في برمجة المواقع وتطويرها وتصميم الحلول الرقمية المبتكرة.<br>
+          أسعى دائماً لتقديم أفضل التجارب الرقمية من خلال استخدام أحدث التقنيات وأفضل الممارسات في عالم البرمجة والتطوير.<br><br>
+          يسعدني التواصل معكم وتبادل الأفكار والعمل معكم على مشاريع تُمكّنكم من تحقيق أهدافكم بكفاءة واحترافية.
+          </p>
+        `;
+      } else if (num === 2) {
+        content = `
+          <h2>السكن</h2>
+          <p>
+          أقيم حالياً في <strong>اليمن – محافظة تعز – منطقة بير باشا – المطار القديم</strong>.<br><br>
+          أعتز بانتمائي لهذه المدينة العريقة التي تمتاز بالحيوية والنشاط، وأسعى من خلالها إلى بناء مستقبل مهني متميز في مجال البرمجة وتطوير المواقع.
+          </p>
+        `;
       }
-
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          userId = user.uid;
-        } else {
-          // يمكن أن يحدث هذا إذا فشلت المصادقة المخصصة/المجهولة
-          userId = crypto.randomUUID();
-          console.error("Authentication failed, falling back to random user ID.");
-        }
-        userIdDisplay.innerText = userId;
-        isAuthReady = true;
-        loadingOverlay.style.display = 'none';
-        setupListeners();
-      });
-
-    } catch (error) {
-      console.error("Firebase Initialization or Authentication Error:", error);
-      userIdDisplay.innerText = 'خطأ في التهيئة';
-      loadingOverlay.style.display = 'none';
-    }
-  }
-
-  // إنشاء مرجع المجموعة في Firestore
-  function getCollectionRef(collectionName) {
-    if (!db || !userId) {
-      console.error("Firestore DB or User ID is not ready.");
-      return null;
-    }
-    // مسار البيانات الخاصة: /artifacts/{appId}/users/{userId}/{collectionName}
-    return collection(db, `artifacts/${appId}/users/${userId}/${collectionName}`);
-  }
-
-  // إعداد مستمعي الوقت الحقيقي (onSnapshot)
-  function setupListeners() {
-    if (!isAuthReady) return;
-
-    // الأصناف (Items)
-    onSnapshot(getCollectionRef('items'), (snapshot) => {
-      items = snapshot.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-      renderItems();
-      console.log("Items updated:", items.length);
-    }, (error) => console.error("Error fetching items:", error));
-
-    // الموردون (Suppliers)
-    onSnapshot(getCollectionRef('suppliers'), (snapshot) => {
-      suppliers = snapshot.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-      renderSuppliers();
-      console.log("Suppliers updated:", suppliers.length);
-    }, (error) => console.error("Error fetching suppliers:", error));
-
-    // العملاء (Customers)
-    onSnapshot(getCollectionRef('customers'), (snapshot) => {
-      customers = snapshot.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-      renderCustomers();
-      console.log("Customers updated:", customers.length);
-    }, (error) => console.error("Error fetching customers:", error));
-
-    // القيود اليومية (Journal)
-    onSnapshot(getCollectionRef('journal'), (snapshot) => {
-      journal = snapshot.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-      renderJournal();
-      console.log("Journal updated:", journal.length);
-    }, (error) => console.error("Error fetching journal:", error));
-
-    // فواتير المشتريات (Purchases) - للقيود والمخزون
-    onSnapshot(getCollectionRef('purchases'), (snapshot) => {
-      purchases = snapshot.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-      console.log("Purchases updated:", purchases.length);
-    }, (error) => console.error("Error fetching purchases:", error));
-
-    // فواتير المبيعات (Sales) - للقيود والمخزون
-    onSnapshot(getCollectionRef('sales'), (snapshot) => {
-      sales = snapshot.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-      console.log("Sales updated:", sales.length);
-    }, (error) => console.error("Error fetching sales:", error));
-
-    // تهيئة صفوف الفواتير عند البداية
-    if (document.querySelector('#purchaseItemsTable tbody').children.length === 0) addPurchaseRow();
-    if (document.querySelector('#salesItemsTable tbody').children.length === 0) addSalesRow();
-    recalcPurchaseGrand();
-    recalcSalesGrand();
-  }
-
-  /* ---------------- أدوات مساعدة ---------------- */
-  function generateId(prefix = 'X') { return prefix + Date.now().toString(36).slice(-6) + Math.random().toString(36).substring(2, 5); }
-  window.generateId = generateId; // إتاحة الوصول من HTML
-
-  // عند النقر على التبويبات، تأكد من إعادة حساب الإجماليات
-  document.querySelectorAll('.tabs button').forEach(btn => btn.addEventListener('click', () => {
-    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(btn.dataset.panel).classList.add('active');
-    // إعادة الحساب عند التبديل
-    recalcPurchaseGrand();
-    recalcSalesGrand();
-  }));
-
-  /* ---------------- إدارة الأصناف ---------------- */
-  window.renderItems = function() {
-    const tbody = document.querySelector('#itemsTable tbody'); tbody.innerHTML = '';
-    items.forEach(it => {
-      // حساب الكمية المتبقية
-      const remainingQty = (Number(it.total_purchases) || 0) - (Number(it.total_sales) || 0);
-      let statusClass = remainingQty <= (it.min_qty || 0) ? 'bg-red-100 text-red-700 font-bold' : 'bg-green-100 text-green-700';
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${it.item_id}</td>
-        <td><input value="${it.item_code || ''}" onchange="updateItem('${it.item_id}','item_code',this.value)"></td>
-        <td><input value="${it.item_name || ''}" onchange="updateItem('${it.item_id}','item_name',this.value)"></td>
-        <td><input value="${it.category || ''}" onchange="updateItem('${it.item_id}','category',this.value)"></td>
-        <td><input value="${it.unit || ''}" onchange="updateItem('${it.item_id}','unit',this.value)"></td>
-        <td><input type='number' value='${it.purchase_price || 0}' onchange="updateItem('${it.item_id}','purchase_price',this.value)"></td>
-        <td><input type='number' value='${it.sale_price || 0}' onchange="updateItem('${it.item_id}','sale_price',this.value)"></td>
-        <td><input type='number' value='${it.min_qty || 0}' onchange="updateItem('${it.item_id}','min_qty',this.value)"></td>
-        <td class="${statusClass} text-sm">${remainingQty} ${it.unit || 'وحدة'}</td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  window.addItemRow = async function() {
-    if (!db) return console.error("Database not initialized.");
-    const newItem = { item_id: generateId('I'), item_code: '', item_name: 'صنف جديد', category: '', unit: '', purchase_price: 0, sale_price: 0, min_qty: 0, total_purchases: 0, total_sales: 0 };
-    try {
-      // نستخدم setDoc مع تحديد ID لضمان تطابق item_id مع doc.id (أو أي حقل آخر إذا كنا بحاجة إليه)
-      await setDoc(doc(getCollectionRef('items'), newItem.item_id), newItem);
-      console.log("New item added with ID:", newItem.item_id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
-  }
-
-  window.updateItem = async function(id, field, value) {
-    if (!db) return;
-    const itemRef = doc(getCollectionRef('items'), id);
-    const updateData = {};
-    if (['purchase_price', 'sale_price', 'min_qty', 'total_purchases', 'total_sales'].includes(field)) {
-      updateData[field] = Number(value);
-    } else {
-      updateData[field] = value;
-    }
-    try {
-      await updateDoc(itemRef, updateData);
-      console.log(`Item ${id} updated: ${field}`);
-    } catch (e) {
-      console.error("Error updating document: ", e);
-    }
-  }
-
-  /* ---------------- موردون و عملاء ---------------- */
-  window.renderSuppliers = function() {
-    const tbody = document.querySelector('#suppliersTable tbody'); tbody.innerHTML = '';
-    suppliers.forEach(s => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${s.supplier_id}</td>
-        <td><input value='${s.name || ''}' onchange="updateSupplier('${s.supplier_id}','name',this.value)"></td>
-        <td><input value='${s.phone || ''}' onchange="updateSupplier('${s.supplier_id}','phone',this.value)"></td>
-        <td><input value='${s.address || ''}' onchange="updateSupplier('${s.supplier_id}','address',this.value)"></td>
-        <td><input type='number' value='${s.balance || 0}' onchange="updateSupplier('${s.supplier_id}','balance',this.value)"></td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  window.addSupplierRow = async function() {
-    if (!db) return;
-    const s = { supplier_id: generateId('S'), name: 'مورد جديد', phone: '', address: '', balance: 0 };
-    try {
-      await setDoc(doc(getCollectionRef('suppliers'), s.supplier_id), s);
-    } catch (e) {
-      console.error("Error adding supplier: ", e);
-    }
-  }
-
-  window.updateSupplier = async function(id, field, val) {
-    if (!db) return;
-    const sRef = doc(getCollectionRef('suppliers'), id);
-    const updateData = {};
-    updateData[field] = (field === 'balance') ? Number(val) : val;
-    try {
-      await updateDoc(sRef, updateData);
-    } catch (e) {
-      console.error("Error updating supplier: ", e);
-    }
-  }
-
-  window.renderCustomers = function() {
-    const tbody = document.querySelector('#customersTable tbody'); tbody.innerHTML = '';
-    customers.forEach(c => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${c.customer_id}</td>
-        <td><input value='${c.name || ''}' onchange="updateCustomer('${c.customer_id}','name',this.value)"></td>
-        <td><input value='${c.phone || ''}' onchange="updateCustomer('${c.customer_id}','phone',this.value)"></td>
-        <td><input value='${c.address || ''}' onchange="updateCustomer('${c.customer_id}','address',this.value)"></td>
-        <td><input type='number' value='${c.balance || 0}' onchange="updateCustomer('${c.customer_id}','balance',this.value)"></td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  window.addCustomerRow = async function() {
-    if (!db) return;
-    const c = { customer_id: generateId('C'), name: 'عميل جديد', phone: '', address: '', balance: 0 };
-    try {
-      await setDoc(doc(getCollectionRef('customers'), c.customer_id), c);
-    } catch (e) {
-      console.error("Error adding customer: ", e);
-    }
-  }
-
-  window.updateCustomer = async function(id, field, val) {
-    if (!db) return;
-    const cRef = doc(getCollectionRef('customers'), id);
-    const updateData = {};
-    updateData[field] = (field === 'balance') ? Number(val) : val;
-    try {
-      await updateDoc(cRef, updateData);
-    } catch (e) {
-      console.error("Error updating customer: ", e);
-    }
-  }
-
-  /* ---------------- مشتريات: إدخال وحفظ ---------------- */
-  window.addPurchaseRow = function() {
-    const tbody = document.querySelector('#purchaseItemsTable tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><input class="w-20 text-center" oninput="purchaseFill(this)" placeholder="رقم"></td>
-      <td><input oninput="purchaseFill(this)" placeholder="اسم"></td>
-      <td><input type='number' value='1' oninput="purchaseCalc(this)" onkeydown="purchaseNext(event)"></td>
-      <td><input type='number' oninput="purchaseCalc(this)" value='0'></td>
-      <td><input readonly value='0'></td>
-      <td><button class='small-btn primary' onclick="openPopupFor(this,'items')">اختيار</button></td>`;
-    tbody.appendChild(tr);
-    recalcPurchaseGrand();
-  }
-
-  window.purchaseFill = function(el) {
-    const tr = el.closest('tr');
-    const inputVal = el.value.trim().toLowerCase();
-    let found = items.find(x => x.item_id === inputVal || x.item_code === inputVal || x.item_name.toLowerCase().includes(inputVal));
-    if (found) {
-      tr.cells[0].querySelector('input').value = found.item_id;
-      tr.cells[1].querySelector('input').value = found.item_name;
-      tr.cells[3].querySelector('input').value = found.purchase_price || 0;
-      purchaseCalc(el);
-    }
-  }
-
-  window.purchaseCalc = function(el) {
-    const tr = el.closest('tr');
-    const qty = Number(tr.cells[2].querySelector('input').value) || 0;
-    const price = Number(tr.cells[3].querySelector('input').value) || 0;
-    tr.cells[4].querySelector('input').value = (qty * price).toFixed(2);
-    recalcPurchaseGrand();
-  }
-
-  window.recalcPurchaseGrand = function() {
-    let total = 0;
-    document.querySelectorAll('#purchaseItemsTable tbody tr').forEach(r => total += Number(r.cells[4].querySelector('input').value) || 0);
-    const transport = Number(document.getElementById('purchaseTransport').value) || 0;
-    const discount = Number(document.getElementById('purchaseDiscount').value) || 0;
-    const net = total + transport - discount;
-    document.getElementById('purchaseGrand').innerText = net.toFixed(2);
-  }
-
-  window.purchaseNext = function(e) { if (e.key === 'Enter') { e.preventDefault(); addPurchaseRow(); } }
-  window.togglePurchaseSupplier = function() { document.getElementById('purchaseSupplierDiv').style.display = (document.getElementById('purchasePayment').value === 'credit') ? 'block' : 'none'; }
-
-  window.savePurchase = async function() {
-    if (!db) return;
-    const supplierVal = document.getElementById('purchaseSupplier').value.trim();
-    const paymentMethod = document.getElementById('purchasePayment').value;
-    if (paymentMethod === 'credit' && supplierVal === '') { return alert('مطلوب اسم المورد عند الآجل'); }
-
-    const itemsList = [];
-    let invoiceTotal = 0;
-    document.querySelectorAll('#purchaseItemsTable tbody tr').forEach(r => {
-      const id = r.cells[0].querySelector('input').value;
-      const name = r.cells[1].querySelector('input').value;
-      const qty = Number(r.cells[2].querySelector('input').value) || 0;
-      const price = Number(r.cells[3].querySelector('input').value) || 0;
-      const total = Number(r.cells[4].querySelector('input').value) || 0;
-      if (id && qty > 0) {
-        itemsList.push({ item_id: id, item_name_snapshot: name, purchase_price_snapshot: price, quantity: qty, total });
-        invoiceTotal += total;
-      }
-    });
-
-    if (itemsList.length === 0) return alert('أدخل صنف واحد على الأقل');
-
-    const purchaseId = generateId('P');
-    const transport = Number(document.getElementById('purchaseTransport').value) || 0;
-    const discount = Number(document.getElementById('purchaseDiscount').value) || 0;
-    const netAmount = Number(document.getElementById('purchaseGrand').innerText) || 0;
-
-    const purchase = {
-      purchase_id: purchaseId,
-      supplier: supplierVal,
-      payment_method: paymentMethod,
-      transport: transport,
-      discount: discount,
-      net_amount: netAmount,
-      items: itemsList,
-      created_at: new Date().toISOString()
-    };
-
-    // تنفيذ عملية متكاملة (Transaction) لضمان اتساق البيانات
-    try {
-      await runTransaction(db, async (transaction) => {
-        // 1. حفظ فاتورة المشتريات
-        const purchaseRef = doc(getCollectionRef('purchases'), purchaseId);
-        transaction.set(purchaseRef, purchase);
-
-        // 2. تحديث كميات المخزون
-        itemsList.forEach(li => {
-          const itemDoc = items.find(x => x.item_id === li.item_id);
-          if (itemDoc) {
-            const itemRef = doc(getCollectionRef('items'), itemDoc.item_id);
-            const newTotalPurchases = (Number(itemDoc.total_purchases) || 0) + li.quantity;
-            transaction.update(itemRef, { total_purchases: newTotalPurchases });
-          }
-        });
-
-        // 3. توليد قيد اليومية (قيد مبسط: من حساب المخزون/المشتريات والمصروفات إلى حساب الصندوق/الموردين)
-        const journalId = generateId('J');
-        const journalEntry = {
-          journal_id: journalId,
-          date: new Date().toISOString(),
-          reference: purchaseId,
-          description: `فاتورة مشتريات (صافي: ${netAmount.toFixed(2)})`,
-          debit: netAmount,
-          credit: netAmount,
-          details: {
-            "المخزون/المشتريات": invoiceTotal.toFixed(2),
-            "مصاريف النقل": transport.toFixed(2),
-            "خصم مكتسب": (-discount).toFixed(2),
-            [paymentMethod === 'credit' ? 'ذمم دائنة/' + supplierVal : 'صندوق/بنك']: netAmount.toFixed(2)
-          }
-        };
-        const journalRef = doc(getCollectionRef('journal'), journalId);
-        transaction.set(journalRef, journalEntry);
-
-        alert(`✅ تم حفظ فاتورة المشتريات والقيد بنجاح. معرف: ${purchaseId}`);
-      });
-    } catch (e) {
-      console.error("Transaction failed: ", e);
-      alert('❌ فشل حفظ الفاتورة والقيد. راجع وحدة التحكم.');
-    }
-  }
-
-
-  /* ---------------- مبيعات مشابهة ---------------- */
-  window.addSalesRow = function() {
-    const tbody = document.querySelector('#salesItemsTable tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><input class="w-20 text-center" oninput="salesFill(this)" placeholder="رقم"></td>
-      <td><input oninput="salesFill(this)" placeholder="اسم"></td>
-      <td><input type='number' value='1' oninput="salesCalc(this)" onkeydown="salesNext(event)"></td>
-      <td><input type='number' oninput="salesCalc(this)" value='0'></td>
-      <td><input readonly value='0'></td>
-      <td><button class='small-btn primary' onclick="openPopupFor(this,'items')">اختيار</button></td>`;
-    tbody.appendChild(tr);
-    recalcSalesGrand();
-  }
-
-  window.salesFill = function(el) {
-    const tr = el.closest('tr');
-    const inputVal = el.value.trim().toLowerCase();
-    let found = items.find(x => x.item_id === inputVal || x.item_code === inputVal || x.item_name.toLowerCase().includes(inputVal));
-    if (found) {
-      tr.cells[0].querySelector('input').value = found.item_id;
-      tr.cells[1].querySelector('input').value = found.item_name;
-      tr.cells[3].querySelector('input').value = found.sale_price || 0;
-      salesCalc(el);
-    }
-  }
-
-  window.salesCalc = function(el) {
-    const tr = el.closest('tr');
-    const qty = Number(tr.cells[2].querySelector('input').value) || 0;
-    const price = Number(tr.cells[3].querySelector('input').value) || 0;
-    tr.cells[4].querySelector('input').value = (qty * price).toFixed(2);
-    recalcSalesGrand();
-  }
-
-  window.recalcSalesGrand = function() {
-    let total = 0;
-    document.querySelectorAll('#salesItemsTable tbody tr').forEach(r => total += Number(r.cells[4].querySelector('input').value) || 0);
-    const ship = Number(document.getElementById('salesShipping').value) || 0;
-    const disc = Number(document.getElementById('salesDiscount').value) || 0;
-    const net = total + ship - disc;
-    document.getElementById('salesGrand').innerText = net.toFixed(2);
-  }
-
-  window.salesNext = function(e) { if (e.key === 'Enter') { e.preventDefault(); addSalesRow(); } }
-  window.toggleSalesCustomer = function() { document.getElementById('salesCustomerDiv').style.display = (document.getElementById('salesPayment').value === 'credit') ? 'block' : 'none'; }
-
-  window.saveSale = async function() {
-    if (!db) return;
-    const customerVal = document.getElementById('salesCustomer').value.trim();
-    const paymentMethod = document.getElementById('salesPayment').value;
-    if (paymentMethod === 'credit' && customerVal === '') return alert('مطلوب اسم العميل عند الآجل');
-
-    const itemsList = [];
-    let invoiceTotal = 0;
-    document.querySelectorAll('#salesItemsTable tbody tr').forEach(r => {
-      const id = r.cells[0].querySelector('input').value;
-      const name = r.cells[1].querySelector('input').value;
-      const qty = Number(r.cells[2].querySelector('input').value) || 0;
-      const price = Number(r.cells[3].querySelector('input').value) || 0;
-      const total = Number(r.cells[4].querySelector('input').value) || 0;
-      if (id && qty > 0) {
-        itemsList.push({ item_id: id, item_name_snapshot: name, sale_price_snapshot: price, quantity: qty, total });
-        invoiceTotal += total;
-      }
-    });
-
-    if (itemsList.length === 0) return alert('أدخل صنف واحد على الأقل');
-
-    const saleId = generateId('SA');
-    const shipping = Number(document.getElementById('salesShipping').value) || 0;
-    const discount = Number(document.getElementById('salesDiscount').value) || 0;
-    const netAmount = Number(document.getElementById('salesGrand').innerText) || 0;
-
-    const sale = {
-      sale_id: saleId,
-      customer: customerVal,
-      payment_method: paymentMethod,
-      shipping: shipping,
-      discount: discount,
-      net_amount: netAmount,
-      items: itemsList,
-      created_at: new Date().toISOString()
-    };
-
-    // تنفيذ عملية متكاملة (Transaction) لضمان اتساق البيانات
-    try {
-      await runTransaction(db, async (transaction) => {
-        // 1. حفظ فاتورة المبيعات
-        const saleRef = doc(getCollectionRef('sales'), saleId);
-        transaction.set(saleRef, sale);
-
-        // 2. تحديث كميات المخزون
-        itemsList.forEach(li => {
-          const itemDoc = items.find(x => x.item_id === li.item_id);
-          if (itemDoc) {
-            const itemRef = doc(getCollectionRef('items'), itemDoc.item_id);
-            const newTotalSales = (Number(itemDoc.total_sales) || 0) + li.quantity;
-            transaction.update(itemRef, { total_sales: newTotalSales });
-          }
-        });
-
-        // 3. توليد قيد اليومية (قيد مبسط: من حساب الصندوق/العملاء إلى حساب المبيعات والإيرادات)
-        const journalId = generateId('J');
-        const journalEntry = {
-          journal_id: journalId,
-          date: new Date().toISOString(),
-          reference: saleId,
-          description: `فاتورة مبيعات (صافي: ${netAmount.toFixed(2)})`,
-          debit: netAmount,
-          credit: netAmount,
-          details: {
-            [paymentMethod === 'credit' ? 'ذمم مدينة/' + customerVal : 'صندوق/بنك']: netAmount.toFixed(2),
-            "المبيعات": invoiceTotal.toFixed(2),
-            "مصاريف التحميل": (-shipping).toFixed(2), // مصاريف التحميل تقلل الدخل
-            "خصم مسموح": (-discount).toFixed(2)      // خصم مسموح به يقلل الدخل
-          }
-        };
-        const journalRef = doc(getCollectionRef('journal'), journalId);
-        transaction.set(journalRef, journalEntry);
-
-        alert(`✅ تم حفظ فاتورة المبيعات والقيد بنجاح. معرف: ${saleId}`);
-      });
-    } catch (e) {
-      console.error("Transaction failed: ", e);
-      alert('❌ فشل حفظ الفاتورة والقيد. راجع وحدة التحكم.');
-    }
-  }
-
-
-  /* ---------------- نافذة Popup ---------------- */
-  let popupContext = null; // 'items'|'suppliers'|'customers'
-  let popupTargetRow = null;
-  let popupTargetInput = null; // للحقول النصية مثل اسم المورد/العميل
-
-  window.openPopupFor = function(el, ctx) {
-    popupContext = ctx;
-    if (ctx === 'items') {
-      popupTargetRow = el.closest('tr');
-      popupTargetInput = null;
-    } else { // suppliers or customers
-      popupTargetRow = null;
-      popupTargetInput = el;
+      document.getElementById("modalText").innerHTML = content;
+      document.getElementById("myModal").style.display = "block";
     }
 
-    document.getElementById('popupTitle').innerText = (ctx === 'items') ? 'قائمة الأصناف' : (ctx === 'suppliers') ? 'قائمة الموردين' : 'قائمة العملاء';
-    document.getElementById('popupSearch').value = '';
-    renderPopupList();
-    document.getElementById('popup').style.display = 'block';
-  }
+    function closeModal() {
+      document.getElementById("myModal").style.display = "none";
+    }
 
-  window.closePopup = function() {
-    document.getElementById('popup').style.display = 'none';
-    popupContext = null;
-    popupTargetRow = null;
-    popupTargetInput = null;
-  }
-
-  window.renderPopupList = function() {
-    const q = document.getElementById('popupSearch').value.trim().toLowerCase();
-    const tbody = document.querySelector('#popupTable tbody');
-    tbody.innerHTML = '';
-    let list = [];
-
-    if (popupContext === 'items') list = items;
-    if (popupContext === 'suppliers') list = suppliers;
-    if (popupContext === 'customers') list = customers;
-
-    list.filter(x => !q || (x.item_name && x.item_name.toLowerCase().includes(q)) || (x.name && x.name.toLowerCase().includes(q))).forEach(it => {
-      const tr = document.createElement('tr');
-      const id = popupContext === 'items' ? it.item_id : (it.supplier_id || it.customer_id);
-      const name = popupContext === 'items' ? it.item_name : (it.name || '');
-      const info = popupContext === 'items' ? `شراء: ${it.purchase_price || 0}` : (it.phone || 'N/A');
-
-      tr.innerHTML = `<td>${id}</td><td>${name}</td><td>${info}</td>
-        <td><button class='small-btn primary' onclick="popupSelect('${popupContext}','${id}')">اختيار</button></td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  window.popupSelect = function(ctx, id) {
-    if (ctx === 'items' && popupTargetRow) {
-      const it = items.find(x => x.item_id === id);
-      if (it) {
-        // ملء بيانات الصنف في سطر الفاتورة
-        popupTargetRow.cells[0].querySelector('input').value = it.item_id;
-        popupTargetRow.cells[1].querySelector('input').value = it.item_name;
-
-        // تحديد سعر الشراء أو البيع بناءً على اللوحة النشطة
-        const activePanel = document.querySelector('.panel.active').id;
-        const priceIndex = (activePanel === 'purchasesPanel' ? 3 : 3); // كلاهما الخلية رقم 3
-        const price = (activePanel === 'purchasesPanel' ? it.purchase_price : it.sale_price) || 0;
-
-        popupTargetRow.cells[priceIndex].querySelector('input').value = price;
-        // إعادة حساب الإجمالي
-        if (activePanel === 'purchasesPanel') purchaseCalc(popupTargetRow.cells[priceIndex].querySelector('input'));
-        if (activePanel === 'salesPanel') salesCalc(popupTargetRow.cells[priceIndex].querySelector('input'));
+    // إغلاق النافذة عند النقر خارجها
+    window.onclick = function(event) {
+      const modal = document.getElementById("myModal");
+      if (event.target === modal) {
+        modal.style.display = "none";
       }
     }
-    if (ctx === 'suppliers' && popupTargetInput) {
-      const s = suppliers.find(x => x.supplier_id === id);
-      if (s) popupTargetInput.value = s.name;
-    }
-    if (ctx === 'customers' && popupTargetInput) {
-      const c = customers.find(x => x.customer_id === id);
-      if (c) popupTargetInput.value = c.name;
-    }
-    closePopup();
-  }
+  </script>
 
-
-  /* ---------------- قيود: إعادة توليد مبسط ---------------- */
-  window.recomputeJournal = async function() {
-    if (!db) return;
-    if (!confirm('هل أنت متأكد من إعادة توليد القيود؟ سيتم مسح القيود الحالية وتوليدها من فواتير المشتريات والمبيعات المحفوظة.')) return;
-
-    try {
-      const batch = writeBatch(db);
-      const journalRef = getCollectionRef('journal');
-
-      // 1. مسح القيود القديمة
-      const oldDocs = await getDocs(journalRef);
-      oldDocs.forEach(doc => batch.delete(doc.ref));
-
-      // 2. توليد قيود المشتريات
-      purchases.forEach(p => {
-        const journalId = generateId('J');
-        const journalEntry = {
-          journal_id: journalId,
-          date: p.created_at,
-          reference: p.purchase_id,
-          description: `قيد مشتريات (صافي: ${p.net_amount.toFixed(2)})`,
-          debit: p.net_amount,
-          credit: p.net_amount,
-          details: { "المخزون/المشتريات": p.net_amount.toFixed(2), [p.payment_method === 'credit' ? 'ذمم دائنة' : 'صندوق/بنك']: p.net_amount.toFixed(2) }
-        };
-        batch.set(doc(journalRef, journalId), journalEntry);
-      });
-
-      // 3. توليد قيود المبيعات
-      sales.forEach(s => {
-        const journalId = generateId('J');
-        const journalEntry = {
-          journal_id: journalId,
-          date: s.created_at,
-          reference: s.sale_id,
-          description: `قيد مبيعات (صافي: ${s.net_amount.toFixed(2)})`,
-          debit: s.net_amount,
-          credit: s.net_amount,
-          details: { "المبيعات": s.net_amount.toFixed(2), [s.payment_method === 'credit' ? 'ذمم مدينة' : 'صندوق/بنك']: s.net_amount.toFixed(2) }
-        };
-        batch.set(doc(journalRef, journalId), journalEntry);
-      });
-
-      await batch.commit();
-      alert('✅ أُعيد توليد القيود من الفواتير بنجاح.');
-    } catch (e) {
-      console.error("Error during recompute journal transaction:", e);
-      alert('❌ فشل إعادة توليد القيود. راجع وحدة التحكم.');
-    }
-  }
-
-  window.renderJournal = function() {
-    const tbody = document.querySelector('#journalTable tbody'); tbody.innerHTML = '';
-    // فرز القيود حسب التاريخ (الأحدث أولاً)
-    const sortedJournal = journal.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    sortedJournal.forEach(j => {
-      const tr = document.createElement('tr');
-      // إنشاء قائمة تفصيلية بالقيود
-      let detailsHtml = j.description;
-      if (j.details) {
-        detailsHtml += '<ul class="list-disc list-inside text-xs mt-1 text-gray-600">';
-        for (const [account, amount] of Object.entries(j.details)) {
-          detailsHtml += `<li>${account}: ${amount}</li>`;
-        }
-        detailsHtml += '</ul>';
-      }
-
-      tr.innerHTML = `<td>${j.journal_id}</td>
-        <td>${new Date(j.date).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-        <td class="text-right">${detailsHtml}</td>
-        <td class="font-bold text-green-700">${(j.debit || 0).toFixed(2)}</td>
-        <td class="font-bold text-red-700">${(j.credit || 0).toFixed(2)}</td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  /* ---------------- التشغيل ---------------- */
-  initFirebaseAndAuth();
-
-</script>
 </body>
 </html>
