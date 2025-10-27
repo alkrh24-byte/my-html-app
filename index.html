@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>شبكة الريان 5G.             </title>
+<title>شبكة الريان 5G</title>
 <style>
   body {
     font-family: "Tajawal", Arial, sans-serif;
     direction: rtl;
     background-color: #3E2F2F; /* بني غامق */
-    color: #F5E4D7; /* لون النص العام */
-    padding: 20px;
+    color: #F5E4D7; /* نص فاتح */
     text-align: center;
+    padding: 20px;
   }
 
-  /* أيقونة الواي فاي */
   .wifi-icon {
     font-size: 80px;
     color: #1E90FF; /* أزرق */
     margin-bottom: 5px;
+    cursor: pointer;
+    user-select: none;
   }
 
-  /* العنوان */
   h1 {
     color: #FFFFFF; /* أبيض */
     font-weight: bold;
@@ -68,14 +68,20 @@
     width: 80%;
     max-width: 350px;
     border-radius: 10px;
-    background-color: #5C4033; /* صندوق الحافظة بني غامق */
+    background-color: #5C4033;
     text-align: center;
+  }
+
+  #savedNumber {
+    font-weight: bold;
+    color: #FFD700; /* ذهبي */
   }
 </style>
 </head>
 <body>
 
-<div class="wifi-icon">🛜</div>
+<!-- أيقونة الواي فاي -->
+<div class="wifi-icon" id="wifiIcon" title="اضغط لإظهار الرقم">🛜</div>
 <h1>شبكة الريان 5G</h1>
 
 <label for="userNumber">أدخل الرقم:</label>
@@ -87,26 +93,48 @@
 <div id="clipboard">لا يوجد أرقام محفوظة بعد.</div>
 
 <script>
+const wifiIcon = document.getElementById('wifiIcon');
+const clipboard = document.getElementById('clipboard');
+let isShown = false;
+
+// عند التحميل: جلب الرقم المحفوظ من التخزين
+window.onload = function() {
+  const saved = localStorage.getItem('savedNumber');
+  if(saved) {
+    clipboard.textContent = 'رقم محفوظ ✅ (اضغط على 🛜 لعرضه)';
+  }
+};
+
+// حفظ الرقم
 function saveNumber() {
-    const input = document.getElementById('userNumber').value.trim();
-    if(input === '') {
-        alert('الرجاء إدخال رقم.');
-        return;
-    }
+  const input = document.getElementById('userNumber').value.trim();
+  if(input === '') {
+    alert('الرجاء إدخال رقم.');
+    return;
+  }
 
-    const clipboard = document.getElementById('clipboard');
-
-    // حفظ الرقم في الحافظة الصغيرة (إضافة)
-    if(clipboard.textContent.includes('لا يوجد')) {
-        clipboard.textContent = input;
-    } else {
-        clipboard.textContent += ' | ' + input;  // إضافة أرقام جديدة مفصولة بعلامة |
-    }
-
-    // مسح مربع الإدخال بعد الحفظ
-    document.getElementById('userNumber').value = '';
+  localStorage.setItem('savedNumber', input);
+  clipboard.textContent = 'تم حفظ الرقم ✅ (اضغط على 🛜 لعرضه)';
+  document.getElementById('userNumber').value = '';
 }
+
+// عند الضغط على الإيموجي 🛜
+wifiIcon.addEventListener('click', () => {
+  const saved = localStorage.getItem('savedNumber');
+  if(!saved) {
+    alert('لا يوجد رقم محفوظ بعد.');
+    return;
+  }
+
+  if(isShown) {
+    clipboard.textContent = 'رقم محفوظ ✅ (اضغط على 🛜 لعرضه)';
+    isShown = false;
+  } else {
+    clipboard.textContent = '📱 الرقم المحفوظ: ' + saved;
+    isShown = true;
+  }
+});
 </script>
 
 </body>
-</html>
+  </html>
