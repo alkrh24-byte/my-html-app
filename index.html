@@ -1,86 +1,998 @@
-CREATE TABLE users (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(150) NOT NULL,
-  email VARCHAR(150) UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  role VARCHAR(50) DEFAULT 'user',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نظام محاسبي مبسّط - نسخة HTML</title>
+  <style>
+    /* عام */
+    :root{--accent:#0b6efd;--bg:#f4f6f8;--card:#fff;--danger:#e55353}
+    body{font-family:Arial, "Cairo", sans-serif;direction:rtl;background:var(--bg);margin:0;padding:20px;color:#222}
+    h1,h2{margin:0 0 16px 0}
+    .container{max-width:1200px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    header .brand{font-size:20px;font-weight:700}
+    header .actions{display:flex;gap:8px;align-items:center}
 
--- دليل الحسابات
-CREATE TABLE chart_of_accounts (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  code VARCHAR(50) NOT NULL,         -- مثال: 1000, 2000
-  name VARCHAR(200) NOT NULL,
-  type ENUM('asset','liability','equity','income','expense') NOT NULL,
-  parent_id BIGINT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (parent_id) REFERENCES chart_of_accounts(id) ON DELETE SET NULL
-);
+    /* لوحة */
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(12,24,40,0.06);margin-bottom:16px}
+    nav.tabs{display:flex;gap:8px;flex-wrap:wrap}
+    nav.tabs button{background:transparent;border:1px solid #d7dbe0;padding:8px 12px;border-radius:8px;cursor:pointer}
+    nav.tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
--- قيود يومية (الأصل)
-CREATE TABLE journal_entries (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  reference VARCHAR(100),
-  date DATE NOT NULL,
-  description TEXT,
-  created_by BIGINT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (created_by) REFERENCES users(id)
-);
+    /* جدول */
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:8px;border-bottom:1px solid #eee;text-align:right}
+    th{background:#fafbfc}
 
--- أسطر قيود (تفصيل الديون والائتمانات)
-CREATE TABLE journal_lines (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  journal_entry_id BIGINT NOT NULL,
-  account_id BIGINT NOT NULL,
-  debit DECIMAL(18,2) DEFAULT 0,
-  credit DECIMAL(18,2) DEFAULT 0,
-  description VARCHAR(500),
-  FOREIGN KEY (journal_entry_id) REFERENCES journal_entries(id) ON DELETE CASCADE,
-  FOREIGN KEY (account_id) REFERENCES chart_of_accounts(id)
-);
+    /* أزرار */
+    .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#fff}
+    .btn.warn{background:#f0ad4e;color:#fff}
+    .btn.danger{background:var(--danger);color:#fff}
+    .small{padding:6px 8px;font-size:13px}
 
--- عملاء
-CREATE TABLE customers (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  phone VARCHAR(50),
-  email VARCHAR(150),
-  address TEXT
-);
+    /* نموذج سريع */
+    .form-row{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+    .form-row label{min-width:120px}
+    .form-row input[type="text"], .form-row input[type="number"], .form-row select, .form-row textarea{
+      flex:1;padding:8px;border:1px solid #d7dbe0;border-radius:8px;background:#fff
+    }
+    textarea{min-height:80px;resize:vertical}
 
--- موردين
-CREATE TABLE suppliers (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  phone VARCHAR(50),
-  email VARCHAR(150),
-  address TEXT
-);
+    /* نوافذ منبثقة */
+    .modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center}
+    .modal.open{display:flex}
+    .modal .box{background:#fff;padding:18px;border-radius:12px;width:95%;max-width:700px;box-shadow:0 8px 30px rgba(0,0,0,0.18)}
+    .modal .box header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .modal .box header h3{margin:0}
+    .closeX{cursor:pointer;padding:6px;border-radius:8px;background:#f5f5f7;border:1px solid #e7e7e9}
 
--- فواتير مبيعات (مبسطة)
-CREATE TABLE invoices (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  invoice_no VARCHAR(100) UNIQUE,
-  customer_id BIGINT,
-  date DATE,
-  due_date DATE,
-  total DECIMAL(18,2),
-  status ENUM('draft','posted','paid','cancelled') DEFAULT 'draft',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (customer_id) REFERENCES customers(id)
-);
+    /* تقارير */
+    .report-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:900px){.report-grid{grid-template-columns:1fr}}
 
--- دفعات
-CREATE TABLE payments (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  invoice_id BIGINT,
-  amount DECIMAL(18,2),
-  date DATE,
-  method VARCHAR(50),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (invoice_id) REFERENCES invoices(id)
-);
+    /* لافتة صغيرة */
+    .badge{display:inline-block;padding:6px 8px;border-radius:20px;background:#eef2ff;color:#0b3b9b;font-weight:700;font-size:13px}
+
+    /* نصوص صغيرة */
+    .muted{color:#666;font-size:13px}
+
+    /* تنبيهات */
+    .alert{padding:10px;border-radius:8px;margin-bottom:10px}
+    .alert.success{background:#e9f8ee;color:#1b7a4b}
+    .alert.error{background:#ffeded;color:#a94442}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <div class="brand">نظام محاسبي مبسّط — نسخة HTML (Local)</div>
+        <div class="muted">تخزين محلي (localStorage) • تجربة تعليمية/مبدئية</div>
+      </div>
+      <div class="actions">
+        <span class="badge" id="dataStatus">لا يوجد بيانات</span>
+        <button class="btn" onclick="exportData()">تصدير بيانات</button>
+        <button class="btn" onclick="importData()">استيراد بيانات</button>
+        <button class="btn" onclick="resetAll()">مسح الكل</button>
+      </div>
+    </header>
+
+    <div class="card">
+      <nav class="tabs" id="mainTabs">
+        <button class="active" data-tab="dashboard">لوحة التحكم</button>
+        <button data-tab="accounts">دليل الحسابات</button>
+        <button data-tab="journal">القيود اليومية</button>
+        <button data-tab="invoices">الفواتير</button>
+        <button data-tab="customers">عملاء/موردين</button>
+        <button data-tab="reports">التقارير</button>
+      </nav>
+    </div>
+
+    <!-- محتويات التبويبات -->
+    <div id="contentArea">
+      <!-- Dashboard -->
+      <section id="dashboard" class="card">
+        <h2>لوحة التحكم</h2>
+        <p class="muted">ملخص سريع عن النظام وحالة البيانات.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
+          <div class="card" style="flex:1;min-width:220px">
+            <h3>الإحصاءات</h3>
+            <div id="statsArea">
+              <p>حسابات: <strong id="statAccounts">0</strong></p>
+              <p>قيود يومية: <strong id="statJournal">0</strong></p>
+              <p>فواتير: <strong id="statInvoices">0</strong></p>
+              <p>عملاء: <strong id="statCustomers">0</strong></p>
+            </div>
+          </div>
+          <div class="card" style="flex:1;min-width:220px">
+            <h3>أحدث القيود</h3>
+            <div id="latestJournal"></div>
+          </div>
+          <div class="card" style="flex:1;min-width:220px">
+            <h3>نصيحة</h3>
+            <p class="muted">يمكنك إنشاء حسابات رئيسية مثل: 1000 نقد/بنك (أصل)، 2000 موردين (خصوم)، 3000 حقوق الملكية، 4000 إيرادات، 5000 مصاريف.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Accounts -->
+      <section id="accounts" class="card" style="display:none">
+        <h2>دليل الحسابات</h2>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+          <button class="btn primary" onclick="openAccountModal()">إضافة حساب</button>
+          <span class="muted">قائمة الحسابات الحالية (يمكن تحديد النوع لاحتساب التقارير)</span>
+        </div>
+        <div id="accountsList"></div>
+      </section>
+
+      <!-- Journal -->
+      <section id="journal" class="card" style="display:none">
+        <h2>القيود اليومية</h2>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+          <button class="btn primary" onclick="openJournalModal()">إضافة قيد</button>
+          <div class="muted">تأكد من توازن القيد (مجموع الدائن = مجموع المدين)</div>
+        </div>
+        <div id="journalList"></div>
+      </section>
+
+      <!-- Invoices -->
+      <section id="invoices" class="card" style="display:none">
+        <h2>الفواتير</h2>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+          <button class="btn primary" onclick="openInvoiceModal()">إنشاء فاتورة جديدة</button>
+          <div class="muted">عند تحويل الفاتورة إلى حالة "منشورة" يتم إنشاء قيد محاسبي تلقائي.</div>
+        </div>
+        <div id="invoicesList"></div>
+      </section>
+
+      <!-- Customers -->
+      <section id="customers" class="card" style="display:none">
+        <h2>العملاء / الموردين</h2>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+          <button class="btn primary" onclick="openCustomerModal()">إضافة عميل/مورد</button>
+          <div class="muted">يمكن ربط الفوترة بعملاء أو موردين.</div>
+        </div>
+        <div id="customersList"></div>
+      </section>
+
+      <!-- Reports -->
+      <section id="reports" class="card" style="display:none">
+        <h2>التقارير</h2>
+        <div class="report-grid">
+          <div class="card">
+            <h3>ميزان المراجعة</h3>
+            <div><button class="btn small" onclick="renderTrialBalance()">عرض ميزان المراجعة</button></div>
+            <div id="trialBalanceArea" style="margin-top:10px"></div>
+          </div>
+          <div class="card">
+            <h3>قائمة الدخل و الميزانية</h3>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <button class="btn small" onclick="renderIncomeStatement()">قائمة الدخل</button>
+              <button class="btn small" onclick="renderBalanceSheet()">الميزانية العمومية</button>
+            </div>
+            <div id="isBalanceArea"></div>
+          </div>
+          <div class="card" style="grid-column:1/3">
+            <h3>دفتر الأستاذ لحساب</h3>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <select id="ledgerAccountSelect"></select>
+              <button class="btn small" onclick="renderLedger()">عرض دفتر الأستاذ</button>
+            </div>
+            <div id="ledgerArea"></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- نوافذ/مودال: حساب -->
+  <div class="modal" id="modalAccount">
+    <div class="box">
+      <header><h3>إضافة / تعديل حساب</h3><span class="closeX" onclick="closeModal('modalAccount')">×</span></header>
+      <div>
+        <div class="form-row">
+          <label>رمز الحساب</label>
+          <input type="text" id="accCode" placeholder="مثال: 1000" />
+        </div>
+        <div class="form-row">
+          <label>اسم الحساب</label>
+          <input type="text" id="accName" placeholder="اسم الحساب" />
+        </div>
+        <div class="form-row">
+          <label>النوع</label>
+          <select id="accType">
+            <option value="asset">أصل (Asset)</option>
+            <option value="liability">خصم/التزامات (Liability)</option>
+            <option value="equity">حقوق ملكية (Equity)</option>
+            <option value="income">إيراد (Income)</option>
+            <option value="expense">مصاريف (Expense)</option>
+          </select>
+        </div>
+        <div style="text-align:left;margin-top:10px">
+          <button class="btn primary" onclick="saveAccount()">حفظ</button>
+          <button class="btn" onclick="closeModal('modalAccount')">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال قيد -->
+  <div class="modal" id="modalJournal">
+    <div class="box">
+      <header><h3>إضافة قيد يومي</h3><span class="closeX" onclick="closeModal('modalJournal')">×</span></header>
+      <div>
+        <div class="form-row">
+          <label>التاريخ</label>
+          <input type="date" id="jeDate" />
+        </div>
+        <div class="form-row">
+          <label>مرجع</label>
+          <input type="text" id="jeRef" placeholder="رقم أو وصف مرجعي" />
+        </div>
+        <div class="form-row">
+          <label>الوصف</label>
+          <textarea id="jeDesc" placeholder="وصف القيد"></textarea>
+        </div>
+
+        <h4>أسطر القيد</h4>
+        <div id="jeLines"></div>
+        <div style="margin-top:8px">
+          <button class="btn" onclick="jeAddLine()">إضافة سطر</button>
+        </div>
+
+        <div style="text-align:left;margin-top:12px">
+          <span class="muted">إجمالي المدين: <strong id="jeTotalDebit">0.00</strong></span>
+          &nbsp;&nbsp;
+          <span class="muted">إجمالي الدائن: <strong id="jeTotalCredit">0.00</strong></span>
+        </div>
+
+        <div style="text-align:left;margin-top:12px">
+          <button class="btn primary" onclick="saveJournal()">حفظ القيد</button>
+          <button class="btn" onclick="closeModal('modalJournal')">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال عميل -->
+  <div class="modal" id="modalCustomer">
+    <div class="box">
+      <header><h3>إضافة عميل/مورد</h3><span class="closeX" onclick="closeModal('modalCustomer')">×</span></header>
+      <div>
+        <div class="form-row">
+          <label>الاسم</label>
+          <input type="text" id="custName" />
+        </div>
+        <div class="form-row">
+          <label>هاتف</label>
+          <input type="text" id="custPhone" />
+        </div>
+        <div class="form-row">
+          <label>نوع</label>
+          <select id="custType">
+            <option value="customer">عميل</option>
+            <option value="supplier">مورد</option>
+          </select>
+        </div>
+        <div style="text-align:left;margin-top:12px">
+          <button class="btn primary" onclick="saveCustomer()">حفظ</button>
+          <button class="btn" onclick="closeModal('modalCustomer')">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال فاتورة -->
+  <div class="modal" id="modalInvoice">
+    <div class="box">
+      <header><h3>إنشاء فاتورة</h3><span class="closeX" onclick="closeModal('modalInvoice')">×</span></header>
+      <div>
+        <div class="form-row">
+          <label>رقم الفاتورة</label><input type="text" id="invNo" />
+        </div>
+        <div class="form-row">
+          <label>العميل/المورد</label>
+          <select id="invCustomer"></select>
+        </div>
+        <div class="form-row">
+          <label>التاريخ</label>
+          <input type="date" id="invDate" />
+        </div>
+        <div class="form-row">
+          <label>تاريخ الاستحقاق</label>
+          <input type="date" id="invDue" />
+        </div>
+
+        <h4>البنود</h4>
+        <div id="invLines"></div>
+        <div style="margin-top:8px"><button class="btn" onclick="invAddLine()">إضافة بند</button></div>
+
+        <div style="text-align:left;margin-top:12px">
+          المجموع: <strong id="invTotal">0.00</strong>
+        </div>
+
+        <div style="text-align:left;margin-top:12px">
+          <button class="btn primary" onclick="saveInvoice()">حفظ & نشر (Post)</button>
+          <button class="btn" onclick="closeModal('modalInvoice')">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال استيراد -->
+  <input type="file" id="importFile" style="display:none" onchange="handleImportFile(event)"/>
+
+  <script>
+    /**************************************************************************
+     * نموذج بيانات محلي (localStorage)
+     * الكيانات: accounts, journalEntries, customers, invoices, payments
+     **************************************************************************/
+
+    // مفاتيح التخزين
+    const STORAGE_KEY = 'mini_accounting_v1';
+
+    // حالة التطبيق في الذاكرة
+    let state = {
+      accounts: [],         // {id, code, name, type}
+      journalEntries: [],  // {id, date, reference, description, lines: [{accountId,debit,credit,description}], createdAt}
+      customers: [],       // {id,name,phone,type}
+      invoices: [],        // {id, invoiceNo, customerId, date, dueDate, lines:[{desc,qty,price}], total, status}
+      payments: []         // {id, invoiceId, amount, date, method}
+    };
+
+    // مساعدة: توليد id بسيط
+    function uid(prefix='id'){ return prefix + '_' + Math.random().toString(36).slice(2,9) }
+
+    // تحميل بيانات من localStorage
+    function loadState(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        try{
+          state = JSON.parse(raw);
+          if(!state.accounts) state.accounts = [];
+          if(!state.journalEntries) state.journalEntries = [];
+          if(!state.customers) state.customers = [];
+          if(!state.invoices) state.invoices = [];
+          if(!state.payments) state.payments = [];
+          document.getElementById('dataStatus').textContent = 'البيانات محلياً';
+        }catch(e){
+          console.error('فشل تحميل البيانات', e);
+        }
+      } else {
+        // إذا لا يوجد بيانات افتراضي — ننشئ بعض الحسابات الافتراضية للمساعدة
+        seedDefaults();
+      }
+      refreshUI();
+    }
+
+    // حفظ في localStorage
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      document.getElementById('dataStatus').textContent = 'آخر حفظ محلي';
+      refreshUI();
+    }
+
+    // مسح كامل
+    function resetAll(){
+      if(!confirm('هل تريد مسح كل البيانات المحلية؟ هذه العملية لا يمكن التراجع عنها.')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state = {accounts:[],journalEntries:[],customers:[],invoices:[],payments:[]};
+      seedDefaults();
+      refreshUI();
+    }
+
+    // تصدير JSON
+    function exportData(){
+      const dataStr = JSON.stringify(state, null, 2);
+      const blob = new Blob([dataStr], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'accounting-data.json'; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // استيراد
+    function importData(){
+      document.getElementById('importFile').click();
+    }
+    function handleImportFile(e){
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        try{
+          const json = JSON.parse(ev.target.result);
+          if(confirm('استبدال البيانات الحالية بالبيانات المستوردة؟')) {
+            state = json;
+            saveState();
+            alert('تم الاستيراد وحفظ البيانات محليًا');
+          }
+        }catch(err){
+          alert('ملف غير صالح');
+        }
+      }
+      reader.readAsText(file);
+    }
+
+    /**************************************************************************
+     * تهيئة حسابات افتراضية للمساعدة
+     **************************************************************************/
+    function seedDefaults(){
+      if(state.accounts && state.accounts.length) return;
+      state.accounts = [
+        {id:uid('acc'),code:'1000',name:'النقد والبنك',type:'asset'},
+        {id:uid('acc'),code:'1100',name:'العملاء (حسابات مدينة)',type:'asset'},
+        {id:uid('acc'),code:'2000',name:'الموردون (حسابات دائنة)',type:'liability'},
+        {id:uid('acc'),code:'3000',name:'رأس المال',type:'equity'},
+        {id:uid('acc'),code:'4000',name:'إيرادات المبيعات',type:'income'},
+        {id:uid('acc'),code:'5000',name:'مصاريف التشغيل',type:'expense'}
+      ];
+      state.customers = [
+        {id:uid('cust'),name:'شركة المثال',phone:'',type:'customer'},
+        {id:uid('cust'),name:'مورد تجريبي',phone:'',type:'supplier'}
+      ];
+      saveState();
+    }
+
+    /**************************************************************************
+     * واجهة المستخدم — تحديث العرض
+     **************************************************************************/
+    function refreshUI(){
+      // إحصاءات
+      document.getElementById('statAccounts').textContent = state.accounts.length;
+      document.getElementById('statJournal').textContent = state.journalEntries.length;
+      document.getElementById('statInvoices').textContent = state.invoices.length;
+      document.getElementById('statCustomers').textContent = state.customers.length;
+
+      renderAccountsList();
+      renderJournalList();
+      renderCustomersList();
+      renderInvoicesList();
+      fillLedgerSelect();
+      renderLatestJournal();
+    }
+
+    /**************************************************************************
+     * دليل الحسابات
+     **************************************************************************/
+    function renderAccountsList(){
+      const container = document.getElementById('accountsList');
+      if(!container) return;
+      if(state.accounts.length === 0){
+        container.innerHTML = '<p class="muted">لا توجد حسابات بعد.</p>';
+        return;
+      }
+      let html = '<table><thead><tr><th>رمز</th><th>اسم الحساب</th><th>النوع</th><th>إجراءات</th></tr></thead><tbody>';
+      state.accounts.forEach(acc=>{
+        html += `<tr>
+          <td>${acc.code}</td>
+          <td>${acc.name}</td>
+          <td>${typeLabel(acc.type)}</td>
+          <td>
+            <button class="btn small" onclick="editAccount('${acc.id}')">تعديل</button>
+            <button class="btn small" onclick="deleteAccount('${acc.id}')">حذف</button>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function typeLabel(t){
+      switch(t){
+        case 'asset': return 'أصل';
+        case 'liability': return 'خصوم';
+        case 'equity': return 'حقوق ملكية';
+        case 'income': return 'إيراد';
+        case 'expense': return 'مصاريف';
+        default: return t;
+      }
+    }
+
+    function openAccountModal(){
+      document.getElementById('accCode').value = '';
+      document.getElementById('accName').value = '';
+      document.getElementById('accType').value = 'asset';
+      document.getElementById('modalAccount').classList.add('open');
+      document.getElementById('modalAccount').dataset.editId = '';
+    }
+    function editAccount(id){
+      const acc = state.accounts.find(a=>a.id===id);
+      if(!acc) return alert('حساب غير موجود');
+      document.getElementById('accCode').value = acc.code;
+      document.getElementById('accName').value = acc.name;
+      document.getElementById('accType').value = acc.type;
+      document.getElementById('modalAccount').dataset.editId = id;
+      document.getElementById('modalAccount').classList.add('open');
+    }
+
+    function saveAccount(){
+      const code = document.getElementById('accCode').value.trim();
+      const name = document.getElementById('accName').value.trim();
+      const type = document.getElementById('accType').value;
+      if(!code || !name) { alert('يرجى تعبئة الكود والاسم'); return; }
+      const editId = document.getElementById('modalAccount').dataset.editId;
+      if(editId){
+        const acc = state.accounts.find(a=>a.id===editId);
+        if(acc){ acc.code = code; acc.name = name; acc.type = type; }
+      } else {
+        state.accounts.push({id:uid('acc'),code,name,type});
+      }
+      saveState();
+      closeModal('modalAccount');
+    }
+
+    function deleteAccount(id){
+      if(!confirm('هل تريد حذف هذا الحساب؟ سيتم حذف أي أسطر قيود مرتبطة به.')) return;
+      // حذف أسطر القيود التي تشير للحساب
+      state.journalEntries.forEach(je=>{
+        je.lines = je.lines.filter(l=>l.accountId !== id);
+      });
+      // حذف الفواتير/دفعات لا نحذف هنا لسهولة
+      state.accounts = state.accounts.filter(a=>a.id!==id);
+      saveState();
+    }
+
+    /**************************************************************************
+     * قيود يومية
+     **************************************************************************/
+    function renderJournalList(){
+      const container = document.getElementById('journalList');
+      if(!container) return;
+      if(state.journalEntries.length === 0){ container.innerHTML = '<p class="muted">لا توجد قيود بعد.</p>'; return; }
+      let html = '<table><thead><tr><th>التاريخ</th><th>المرجع</th><th>الوصف</th><th>مدين</th><th>دائن</th><th>إجراءات</th></tr></thead><tbody>';
+      state.journalEntries.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(je=>{
+        const totals = sumLines(je.lines);
+        html += `<tr>
+          <td>${je.date}</td>
+          <td>${je.reference||''}</td>
+          <td>${je.description||''}</td>
+          <td>${totals.debit.toFixed(2)}</td>
+          <td>${totals.credit.toFixed(2)}</td>
+          <td>
+            <button class="btn small" onclick="viewJournal('${je.id}')">عرض</button>
+            <button class="btn small" onclick="deleteJournal('${je.id}')">حذف</button>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+    function viewJournal(id){
+      const je = state.journalEntries.find(x=>x.id===id);
+      if(!je) return alert('غير موجود');
+      let html = `<h4>قيد بتاريخ ${je.date}</h4><p class="muted">${je.description||''}</p>`;
+      html += '<table><thead><tr><th>الحساب</th><th>مدين</th><th>دائن</th></tr></thead><tbody>';
+      je.lines.forEach(l=>{
+        const acc = state.accounts.find(a=>a.id===l.accountId);
+        html += `<tr><td>${acc?acc.name:'(حساب محذوف)'}</td><td>${l.debit.toFixed(2)}</td><td>${l.credit.toFixed(2)}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      openCustomModal('تفاصيل القيد', html);
+    }
+
+    function deleteJournal(id){
+      if(!confirm('حذف القيد؟')) return;
+      state.journalEntries = state.journalEntries.filter(j=>j.id!==id);
+      saveState();
+    }
+
+    // Modal dynamic
+    function openCustomModal(title,htmlContent){
+      const modalId = 'modalCustom';
+      let modal = document.getElementById(modalId);
+      if(!modal){
+        modal = document.createElement('div'); modal.id = modalId; modal.className = 'modal open';
+        modal.innerHTML = `<div class="box"><header><h3 id="customTitle"></h3><span class="closeX" onclick="closeModal('${modalId}')">×</span></header><div id="customBody"></div></div>`;
+        document.body.appendChild(modal);
+      }
+      document.getElementById('customTitle').innerText = title;
+      document.getElementById('customBody').innerHTML = htmlContent;
+      modal.classList.add('open');
+    }
+
+    // إنشاء قيد — نموذج
+    function openJournalModal(){
+      document.getElementById('jeDate').valueAsDate = new Date();
+      document.getElementById('jeRef').value = '';
+      document.getElementById('jeDesc').value = '';
+      document.getElementById('jeLines').innerHTML = '';
+      // اضافة سطرين افتراضيين
+      jeAddLine(); jeAddLine();
+      document.getElementById('modalJournal').classList.add('open');
+    }
+
+    function jeAddLine(){
+      const id = uid('jel');
+      const accountsOptions = state.accounts.map(a=>`<option value="${a.id}">${a.code} - ${a.name}</option>`).join('');
+      const div = document.createElement('div');
+      div.className = 'form-row';
+      div.id = id;
+      div.innerHTML = `
+        <label style="min-width:90px">حساب</label>
+        <select style="width:40%" class="je-account">${accountsOptions}</select>
+        <input type="number" class="je-debit" placeholder="مدين" step="0.01" value="0" />
+        <input type="number" class="je-credit" placeholder="دائن" step="0.01" value="0" />
+        <button class="btn small" onclick="removeJeLine('${id}')">حذف</button>
+      `;
+      document.getElementById('jeLines').appendChild(div);
+      // ربط حساب التغيرات
+      div.querySelectorAll('.je-debit, .je-credit').forEach(el=>el.addEventListener('input', updateJeTotals));
+      updateJeTotals();
+    }
+    function removeJeLine(id){ const el = document.getElementById(id); if(el) el.remove(); updateJeTotals(); }
+
+    function updateJeTotals(){
+      let totD=0, totC=0;
+      document.querySelectorAll('#jeLines .form-row').forEach(row=>{
+        const d = parseFloat(row.querySelector('.je-debit').value) || 0;
+        const c = parseFloat(row.querySelector('.je-credit').value) || 0;
+        totD += d; totC += c;
+      });
+      document.getElementById('jeTotalDebit').innerText = totD.toFixed(2);
+      document.getElementById('jeTotalCredit').innerText = totC.toFixed(2);
+    }
+
+    function sumLines(lines){
+      let debit=0,credit=0;
+      lines.forEach(l=>{ debit += Number(l.debit||0); credit += Number(l.credit||0); });
+      return {debit,credit};
+    }
+
+    function saveJournal(){
+      const date = document.getElementById('jeDate').value;
+      const reference = document.getElementById('jeRef').value.trim();
+      const description = document.getElementById('jeDesc').value.trim();
+      const linesEls = document.querySelectorAll('#jeLines .form-row');
+      const lines = [];
+      linesEls.forEach(row=>{
+        const accountId = row.querySelector('.je-account').value;
+        const debit = parseFloat(row.querySelector('.je-debit').value) || 0;
+        const credit = parseFloat(row.querySelector('.je-credit').value) || 0;
+        if(debit === 0 && credit === 0) return; // تجاهل الصفوف الفارغة
+        lines.push({accountId,debit,credit,description: ''});
+      });
+      if(lines.length === 0) return alert('أضف على الأقل سطر واحد بالقيم');
+      const totals = sumLines(lines);
+      if(Math.abs(totals.debit - totals.credit) > 0.001) return alert('القيد غير متوازن! اجعل مجموع المدين = مجموع الدائن');
+      const je = {id: uid('je'), date, reference, description, lines, createdAt: (new Date()).toISOString()};
+      state.journalEntries.push(je);
+      saveState();
+      closeModal('modalJournal');
+    }
+
+    /**************************************************************************
+     * عملاء / موردين
+     **************************************************************************/
+    function renderCustomersList(){
+      const c = document.getElementById('customersList');
+      if(!c) return;
+      if(!state.customers.length){ c.innerHTML = '<p class="muted">لا يوجد عملاء/موردين بعد.</p>'; return; }
+      let html = '<table><thead><tr><th>الاسم</th><th>الهاتف</th><th>النوع</th><th>إجراءات</th></tr></thead><tbody>';
+      state.customers.forEach(cs=>{
+        html += `<tr>
+          <td>${cs.name}</td><td>${cs.phone||''}</td><td>${cs.type==='customer'?'عميل':'مورد'}</td>
+          <td>
+            <button class="btn small" onclick="editCustomer('${cs.id}')">تعديل</button>
+            <button class="btn small" onclick="deleteCustomer('${cs.id}')">حذف</button>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      c.innerHTML = html;
+    }
+
+    function openCustomerModal(){
+      document.getElementById('custName').value='';
+      document.getElementById('custPhone').value='';
+      document.getElementById('custType').value='customer';
+      document.getElementById('modalCustomer').dataset.editId = '';
+      document.getElementById('modalCustomer').classList.add('open');
+    }
+    function editCustomer(id){
+      const cs = state.customers.find(x=>x.id===id);
+      if(!cs) return;
+      document.getElementById('custName').value = cs.name;
+      document.getElementById('custPhone').value = cs.phone||'';
+      document.getElementById('custType').value = cs.type;
+      document.getElementById('modalCustomer').dataset.editId = id;
+      document.getElementById('modalCustomer').classList.add('open');
+    }
+    function saveCustomer(){
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const type = document.getElementById('custType').value;
+      if(!name) return alert('الاسم مطلوب');
+      const editId = document.getElementById('modalCustomer').dataset.editId;
+      if(editId){
+        const cs = state.customers.find(x=>x.id===editId);
+        cs.name = name; cs.phone = phone; cs.type = type;
+      } else {
+        state.customers.push({id:uid('cust'),name,phone,type});
+      }
+      saveState();
+      closeModal('modalCustomer');
+    }
+    function deleteCustomer(id){
+      if(!confirm('حذف؟')) return;
+      state.customers = state.customers.filter(c=>c.id!==id);
+      saveState();
+    }
+
+    /**************************************************************************
+     * فواتير & دفعات
+     * عند نشر فاتورة (status=posted) ننشئ قيد محاسبي تلقائي:
+     * - مدين: عملاء (أو حساب AR العام) بالمبلغ
+     * - دائن: إيرادات المبيعات
+     **************************************************************************/
+    function openInvoiceModal(){
+      document.getElementById('invNo').value = 'INV-' + new Date().getTime();
+      document.getElementById('invDate').valueAsDate = new Date();
+      const due = new Date(); due.setDate(due.getDate()+30); document.getElementById('invDue').valueAsDate = due;
+      document.getElementById('invLines').innerHTML = '';
+      invAddLine();
+      // تعبئة الخيارات للعملاء
+      const sel = document.getElementById('invCustomer'); sel.innerHTML = '';
+      state.customers.forEach(c=> sel.insertAdjacentHTML('beforeend', `<option value="${c.id}">${c.name}</option>`));
+      document.getElementById('modalInvoice').classList.add('open');
+    }
+
+    function invAddLine(){
+      const id = uid('invL');
+      const div = document.createElement('div'); div.className='form-row'; div.id=id;
+      div.innerHTML = `
+        <label style="min-width:90px">الوصف</label>
+        <input type="text" class="inv-desc" placeholder="وصف البند" />
+        <input type="number" class="inv-qty" placeholder="كمية" value="1" />
+        <input type="number" class="inv-price" placeholder="سعر الوحدة" value="0" />
+        <button class="btn small" onclick="removeInvLine('${id}')">حذف</button>
+      `;
+      document.getElementById('invLines').appendChild(div);
+      div.querySelectorAll('.inv-qty, .inv-price').forEach(el=>el.addEventListener('input', updateInvTotal));
+      updateInvTotal();
+    }
+    function removeInvLine(id){ const el=document.getElementById(id); if(el) el.remove(); updateInvTotal(); }
+    function updateInvTotal(){
+      let total = 0;
+      document.querySelectorAll('#invLines .form-row').forEach(row=>{
+        const q = parseFloat(row.querySelector('.inv-qty').value)||0;
+        const p = parseFloat(row.querySelector('.inv-price').value)||0;
+        total += q*p;
+      });
+      document.getElementById('invTotal').innerText = total.toFixed(2);
+    }
+
+    function saveInvoice(){
+      const invoiceNo = document.getElementById('invNo').value.trim();
+      const customerId = document.getElementById('invCustomer').value;
+      const date = document.getElementById('invDate').value;
+      const due = document.getElementById('invDue').value;
+      const linesEls = document.querySelectorAll('#invLines .form-row');
+      const lines = [];
+      let total = 0;
+      linesEls.forEach(r=>{
+        const desc = r.querySelector('.inv-desc').value.trim();
+        const qty = parseFloat(r.querySelector('.inv-qty').value)||0;
+        const price = parseFloat(r.querySelector('.inv-price').value)||0;
+        if(qty===0 && price===0) return;
+        lines.push({desc,qty,price,amount:qty*price});
+        total += qty*price;
+      });
+      if(lines.length===0) return alert('أضف بند واحد على الأقل');
+      const invoice = {id:uid('inv'),invoiceNo,customerId,date,dueDate:due,lines,total,status:'posted',createdAt:(new Date()).toISOString()};
+      state.invoices.push(invoice);
+
+      // إنشاء قيد محاسبي تلقائي للفاتورة المنشورة
+      // العثور على حساب العملاء (asset) و حساب الإيرادات (income)
+      const customerAccount = findAccountByType('asset') || state.accounts[0];
+      const revenueAccount = findAccountByType('income') || state.accounts.find(a=>a.type==='income');
+      if(!customerAccount || !revenueAccount){
+        alert('تحذير: لا يوجد حساب عملاء أو حساب إيرادات. قم بإنشائه يدويًا.');
+      } else {
+        const je = {
+          id: uid('je'),
+          date: date,
+          reference: invoice.invoiceNo,
+          description: `قيد فاتورة ${invoice.invoiceNo}`,
+          lines: [
+            {accountId: customerAccount.id, debit: total, credit:0, description:`فاتورة ${invoice.invoiceNo}`},
+            {accountId: revenueAccount.id, debit:0, credit: total, description:`إيراد فاتورة ${invoice.invoiceNo}`}
+          ],
+          createdAt: (new Date()).toISOString()
+        };
+        state.journalEntries.push(je);
+      }
+      saveState();
+      closeModal('modalInvoice');
+    }
+
+    function findAccountByType(type){
+      // الأفضل اختيار الحساب المناسب: لو وجد حساب باسم يحتوي "عملاء" أو "النقد" .. ولكن هنا نبحث أول حساب من النوع المطلوب
+      return state.accounts.find(a=>a.type===type);
+    }
+
+    function renderInvoicesList(){
+      const c = document.getElementById('invoicesList');
+      if(!c) return;
+      if(state.invoices.length===0){ c.innerHTML = '<p class="muted">لا توجد فواتير بعد.</p>'; return; }
+      let html = '<table><thead><tr><th>رقم</th><th>العميل</th><th>التاريخ</th><th>المجموع</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>';
+      state.invoices.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(inv=>{
+        const cust = state.customers.find(c=>c.id===inv.customerId);
+        html += `<tr>
+          <td>${inv.invoiceNo}</td>
+          <td>${cust?cust.name:'(مجهول)'}</td>
+          <td>${inv.date}</td>
+          <td>${inv.total.toFixed(2)}</td>
+          <td>${inv.status}</td>
+          <td>
+            <button class="btn small" onclick="viewInvoice('${inv.id}')">عرض</button>
+            <button class="btn small" onclick="deleteInvoice('${inv.id}')">حذف</button>
+          </td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      c.innerHTML = html;
+    }
+
+    function viewInvoice(id){
+      const inv = state.invoices.find(x=>x.id===id);
+      if(!inv) return;
+      const cust = state.customers.find(c=>c.id===inv.customerId);
+      let html = `<h4>فاتورة ${inv.invoiceNo}</h4><p>العميل: ${cust?cust.name:''} <br>التاريخ: ${inv.date} - الاستحقاق: ${inv.dueDate}</p>`;
+      html += '<table><thead><tr><th>الوصف</th><th>كمية</th><th>سعر</th><th>المجموع</th></tr></thead><tbody>';
+      inv.lines.forEach(l=> html += `<tr><td>${l.desc}</td><td>${l.qty}</td><td>${l.price.toFixed(2)}</td><td>${(l.amount).toFixed(2)}</td></tr>`);
+      html += `</tbody></table><p>الإجمالي: <strong>${inv.total.toFixed(2)}</strong></p>`;
+      openCustomModal('عرض الفاتورة', html);
+    }
+
+    function deleteInvoice(id){
+      if(!confirm('حذف الفاتورة؟ سيبقى القيد المحاسبي المرتبط إن تم إنشاؤه.')) return;
+      state.invoices = state.invoices.filter(i=>i.id!==id);
+      saveState();
+    }
+
+    /**************************************************************************
+     * تقارير: ميزان المراجعة، قائمة الدخل، الميزانية العمومية، دفتر الأستاذ
+     **************************************************************************/
+    function calculateAccountBalances(){
+      // نحسب مجموع المدين والدائن لكل حساب من القيود
+      const map = {};
+      state.accounts.forEach(a=>map[a.id] = {account:a, debit:0, credit:0});
+      state.journalEntries.forEach(je=>{
+        je.lines.forEach(l=>{
+          if(!map[l.accountId]) {
+            // حساب محذوف: تجاهل أو تجميع في كائن مؤقت
+            map[l.accountId] = {account: {id:l.accountId, code:'--', name:'(حساب محذوف)', type:'asset'}, debit:0, credit:0};
+          }
+          map[l.accountId].debit += Number(l.debit || 0);
+          map[l.accountId].credit += Number(l.credit || 0);
+        });
+      });
+      return Object.values(map);
+    }
+
+    function renderTrialBalance(){
+      const arr = calculateAccountBalances();
+      let html = '<table><thead><tr><th>رمز</th><th>اسم الحساب</th><th>مدين</th><th>دائن</th></tr></thead><tbody>';
+      let totD=0, totC=0;
+      arr.forEach(row=>{
+        html += `<tr><td>${row.account.code||''}</td><td>${row.account.name}</td><td>${row.debit.toFixed(2)}</td><td>${row.credit.toFixed(2)}</td></tr>`;
+        totD += row.debit; totC += row.credit;
+      });
+      html += `<tr><th colspan="2">الإجمالي</th><th>${totD.toFixed(2)}</th><th>${totC.toFixed(2)}</th></tr>`;
+      html += '</tbody></table>';
+      document.getElementById('trialBalanceArea').innerHTML = html;
+    }
+
+    function renderLedger(){
+      const sel = document.getElementById('ledgerAccountSelect');
+      const accountId = sel.value;
+      if(!accountId) return alert('اختر حساباً');
+      const acc = state.accounts.find(a=>a.id===accountId);
+      // جلب كل الأسطر الخاصة بالحساب
+      const entries = [];
+      state.journalEntries.forEach(je=>{
+        je.lines.forEach(l=>{
+          if(l.accountId === accountId) entries.push({date:je.date, ref:je.reference, desc:je.description, debit:l.debit, credit:l.credit});
+        });
+      });
+      entries.sort((a,b)=> new Date(a.date) - new Date(b.date));
+      let html = `<h4>دفتر الأستاذ - ${acc.code} ${acc.name}</h4>`;
+      html += '<table><thead><tr><th>التاريخ</th><th>المرجع</th><th>الوصف</th><th>مدين</th><th>دائن</th><th>الرصيد</th></tr></thead><tbody>';
+      let balance = 0;
+      const isNormalDebit = (acc.type === 'asset' || acc.type === 'expense');
+      entries.forEach(e=>{
+        balance += (e.debit || 0) - (e.credit || 0);
+        html += `<tr><td>${e.date}</td><td>${e.ref||''}</td><td>${e.desc||''}</td><td>${(e.debit||0).toFixed(2)}</td><td>${(e.credit||0).toFixed(2)}</td><td>${balance.toFixed(2)}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('ledgerArea').innerHTML = html;
+    }
+
+    function renderIncomeStatement(){
+      const balances = calculateAccountBalances();
+      let revenue = 0, expense = 0;
+      balances.forEach(b=>{
+        if(b.account.type === 'income') revenue += (b.credit - b.debit); // الإيراد يكون عادة دائن
+        if(b.account.type === 'expense') expense += (b.debit - b.credit);
+      });
+      const profit = revenue - expense;
+      let html = `<h4>قائمة الدخل</h4><p>إيرادات: <strong>${revenue.toFixed(2)}</strong> - مصاريف: <strong>${expense.toFixed(2)}</strong></p><p>صافي الربح: <strong>${profit.toFixed(2)}</strong></p>`;
+      document.getElementById('isBalanceArea').innerHTML = html;
+    }
+
+    function renderBalanceSheet(){
+      const balances = calculateAccountBalances();
+      let assets=0, liabilities=0, equity=0;
+      balances.forEach(b=>{
+        if(b.account.type === 'asset') assets += (b.debit - b.credit);
+        if(b.account.type === 'liability') liabilities += (b.credit - b.debit);
+        if(b.account.type === 'equity') equity += (b.credit - b.debit);
+      });
+      let html = `<h4>الميزانية العمومية</h4><p>أصول: <strong>${assets.toFixed(2)}</strong> - خصوم: <strong>${liabilities.toFixed(2)}</strong> - حقوق ملكية: <strong>${equity.toFixed(2)}</strong></p>`;
+      document.getElementById('isBalanceArea').innerHTML = html;
+    }
+
+    /**************************************************************************
+     * مساعدات عامة
+     **************************************************************************/
+    function closeModal(id){
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('open');
+    }
+
+    // تهيئة عناصر الواجهة (التابس)
+    document.querySelectorAll('#mainTabs button').forEach(btn=>{
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('#mainTabs button').forEach(b=>b.classList.remove('active'));
+        this.classList.add('active');
+        const tab = this.dataset.tab;
+        document.querySelectorAll('#contentArea section').forEach(s=>s.style.display='none');
+        document.getElementById(tab).style.display = 'block';
+      });
+    });
+
+    // ملء اختيار دفتر الأستاذ
+    function fillLedgerSelect(){
+      const sel = document.getElementById('ledgerAccountSelect');
+      sel.innerHTML = '<option value="">-- اختر حساب --</option>';
+      state.accounts.forEach(a=> sel.insertAdjacentHTML('beforeend', `<option value="${a.id}">${a.code} - ${a.name}</option>`));
+    }
+
+    // عرض آخر القيود
+    function renderLatestJournal(){
+      const el = document.getElementById('latestJournal');
+      if(!el) return;
+      const j = state.journalEntries.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
+      if(j.length===0) { el.innerHTML = '<p class="muted">لا توجد قيود بعد.</p>'; return; }
+      let html = '<ul>';
+      j.forEach(je=> html += `<li>${je.date} - ${je.reference||''} - ${je.description||''}</li>`);
+      html += '</ul>';
+      el.innerHTML = html;
+    }
+
+    // ملحوظة: خيارات سريعة لإيجاد حساب مناسب
+    function autoFindAccountByNameContains(word){
+      return state.accounts.find(a=>a.name.toLowerCase().includes(word.toLowerCase()));
+    }
+
+    /**************************************************************************
+     * تهيئة أولية
+     **************************************************************************/
+    loadState();
+
+    // تسهيل: ربط أغلب الأشياء بعد تحميل الصفحة
+    window.addEventListener('load', ()=>{
+      // اغلاق المودالات عند النقر خارج الصندوق
+      document.querySelectorAll('.modal').forEach(mod=>{
+        mod.addEventListener('click', (ev)=>{
+          if(ev.target === mod) mod.classList.remove('open');
+        });
+      });
+    });
+  </script>
+</body>
+  </html>
