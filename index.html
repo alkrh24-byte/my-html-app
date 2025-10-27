@@ -1,249 +1,48 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🌐"المهندس /عرفات احمد "⚛️نظام محاسبي متكامل</title>
-  <style>
-    body {
-      font-family: "Cairo", sans-serif;
-      background: #f5f7fa;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #007bff;
-      color: white;
-      padding: 15px;
-      text-align: center;
-    }
-    nav {
-      background: #e9ecef;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px;
-    }
-    nav button {
-      padding: 10px 20px;
-      border: none;
-      background: #007bff;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    nav button:hover {
-      background: #0056b3;
-    }
-    .content {
-      padding: 20px;
-    }
-    .form-section {
-      display: none;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px #ccc;
-      margin-top: 20px;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
-    th {
-      background: #007bff;
-      color: white;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل الرقم</title>
+<style>
+  body { font-family: Arial, sans-serif; direction: rtl; padding: 20px; }
+  input, button { padding: 10px; margin: 5px 0; font-size: 16px; }
+  #clipboard { margin-top: 20px; padding: 10px; border: 1px solid #ccc; min-height: 30px; }
+</style>
 </head>
 <body>
+<h2>             🛜    </h2>
+<h2>شبكة الريان 5G</h2>
 
-  <header>
-    <h1>💼🌐"االمهندس /عرفات احمد "⚛️النظام المحاسبي المتكامل</h1>
-  </header>
+<label for="userNumber">أدخل الرقم:</label><br>
+<input type="text" id="userNumber" placeholder="أدخل رقمك هنا">
+<br>
+<button onclick="saveNumber()">تسجيل الدخول</button>
 
-  <nav>
-    <button onclick="showSection('items')">إدارة الأصناف</button>
-    <button onclick="showSection('purchase')">فاتورة مشتريات</button>
-    <button onclick="showSection('sales')">فاتورة مبيعات</button>
-    <button onclick="showSection('report')">التقارير</button>
-  </nav>
+<h3>الحافظة الصغيرة:</h3>
+<div id="clipboard">لا يوجد أرقام محفوظة بعد.</div>
 
-  <div class="content">
-
-    <!-- قسم الأصناف -->
-    <section id="items" class="form-section">
-      <h2>إدارة الأصناف</h2>
-      <label>اسم الصنف:</label>
-      <input type="text" id="itemName">
-      <label>الفئة:</label>
-      <input type="text" id="itemCategory">
-      <label>الوحدة:</label>
-      <input type="text" id="itemUnit">
-      <label>سعر الشراء:</label>
-      <input type="number" id="itemBuy">
-      <label>سعر البيع:</label>
-      <input type="number" id="itemSell">
-      <button onclick="addItem()">إضافة الصنف</button>
-
-      <table id="itemsTable">
-        <thead>
-          <tr>
-            <th>الرقم</th>
-            <th>الاسم</th>
-            <th>الفئة</th>
-            <th>الوحدة</th>
-            <th>سعر الشراء</th>
-            <th>سعر البيع</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- قسم فواتير المشتريات -->
-    <section id="purchase" class="form-section">
-      <h2>فاتورة المشتريات</h2>
-      <label>اسم المورد:</label>
-      <input type="text" id="supplierName">
-      <label>اسم الصنف:</label>
-      <input type="text" id="purchaseItem">
-      <label>الكمية:</label>
-      <input type="number" id="purchaseQty">
-      <label>السعر للوحدة:</label>
-      <input type="number" id="purchasePrice">
-      <button onclick="addPurchase()">إضافة الفاتورة</button>
-
-      <table id="purchaseTable">
-        <thead>
-          <tr>
-            <th>المورد</th>
-            <th>الصنف</th>
-            <th>الكمية</th>
-            <th>السعر</th>
-            <th>الإجمالي</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- قسم فواتير المبيعات -->
-    <section id="sales" class="form-section">
-      <h2>فاتورة المبيعات</h2>
-      <label>اسم العميل:</label>
-      <input type="text" id="clientName">
-      <label>اسم الصنف:</label>
-      <input type="text" id="salesItem">
-      <label>الكمية:</label>
-      <input type="number" id="salesQty">
-      <label>السعر للوحدة:</label>
-      <input type="number" id="salesPrice">
-      <button onclick="addSale()">إضافة الفاتورة</button>
-
-      <table id="salesTable">
-        <thead>
-          <tr>
-            <th>العميل</th>
-            <th>الصنف</th>
-            <th>الكمية</th>
-            <th>السعر</th>
-            <th>الإجمالي</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <!-- التقارير -->
-    <section id="report" class="form-section">
-      <h2>📊 التقارير</h2>
-      <p>سيتم عرض ملخص الأرباح والخسائر والقيود هنا لاحقاً.</p>
-    </section>
-
-  </div>
-
-  <script>
-    function showSection(id) {
-      document.querySelectorAll('.form-section').forEach(s => s.style.display = 'none');
-      document.getElementById(id).style.display = 'block';
+<script>
+function saveNumber() {
+    const input = document.getElementById('userNumber').value.trim();
+    if(input === '') {
+        alert('الرجاء إدخال رقم.');
+        return;
     }
 
-    // إدارة الأصناف
-    let items = [];
-    function addItem() {
-      const item = {
-        name: itemName.value,
-        category: itemCategory.value,
-        unit: itemUnit.value,
-        buy: parseFloat(itemBuy.value),
-        sell: parseFloat(itemSell.value)
-      };
-      items.push(item);
-      updateItemsTable();
-    }
-    function updateItemsTable() {
-      const tbody = document.querySelector("#itemsTable tbody");
-      tbody.innerHTML = "";
-      items.forEach((it, i) => {
-        const row = `<tr>
-          <td>${i + 1}</td><td>${it.name}</td><td>${it.category}</td><td>${it.unit}</td><td>${it.buy}</td><td>${it.sell}</td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
+    const clipboard = document.getElementById('clipboard');
+
+    // حفظ الرقم في الحافظة الصغيرة (إضافة)
+    if(clipboard.textContent.includes('لا يوجد')) {
+        clipboard.textContent = input;
+    } else {
+        clipboard.textContent += ' | ' + input;  // إضافة أرقام جديدة مفصولة بعلامة |
     }
 
-    // فواتير المشتريات
-    let purchases = [];
-    function addPurchase() {
-      const p = {
-        supplier: supplierName.value,
-        item: purchaseItem.value,
-        qty: parseFloat(purchaseQty.value),
-        price: parseFloat(purchasePrice.value),
-      };
-      p.total = p.qty * p.price;
-      purchases.push(p);
-      const tbody = document.querySelector("#purchaseTable tbody");
-      tbody.innerHTML += `<tr>
-        <td>${p.supplier}</td><td>${p.item}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>
-      </tr>`;
-    }
+    // مسح مربع الإدخال بعد الحفظ
+    document.getElementById('userNumber').value = '';
+}
+</script>
 
-    // فواتير المبيعات
-    let sales = [];
-    function addSale() {
-      const s = {
-        client: clientName.value,
-        item: salesItem.value,
-        qty: parseFloat(salesQty.value),
-        price: parseFloat(salesPrice.value),
-      };
-      s.total = s.qty * s.price;
-      sales.push(s);
-      const tbody = document.querySelector("#salesTable tbody");
-      tbody.innerHTML += `<tr>
-        <td>${s.client}</td><td>${s.item}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.total}</td>
-      </tr>`;
-    }
-  </script>
 </body>
-        </html>
+  </html>
