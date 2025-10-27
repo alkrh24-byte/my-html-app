@@ -3,39 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>                        🛜                 </title>
-  <title>شبكة الريان5G     </title>
+<title>شبكة الريان 5G.             </title>
 <style>
   body {
-    font-family: Arial, sans-serif;
+    font-family: "Tajawal", Arial, sans-serif;
     direction: rtl;
     background-color: #3E2F2F; /* بني غامق */
-    color: #F5E4D7; /* لون فاتح للنص */
+    color: #F5E4D7; /* لون النص العام */
     padding: 20px;
+    text-align: center;
   }
 
+  /* أيقونة الواي فاي */
+  .wifi-icon {
+    font-size: 80px;
+    color: #1E90FF; /* أزرق */
+    margin-bottom: 5px;
+  }
+
+  /* العنوان */
   h1 {
-    text-align: center;
+    color: #FFFFFF; /* أبيض */
+    font-weight: bold;
+    font-size: 28px;
     margin-bottom: 30px;
-    color: #FFD700; /* لون ذهبي للعنوان */
   }
 
   label {
     font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
   }
 
   input, button {
     padding: 10px;
     margin: 5px 0;
     font-size: 16px;
-    border-radius: 5px;
+    border-radius: 8px;
     border: none;
   }
 
   input {
-    width: 100%;
+    width: 80%;
     max-width: 300px;
-    display: block;
+    text-align: center;
   }
 
   button {
@@ -50,20 +61,24 @@
   }
 
   #clipboard {
-    margin-top: 20px;
+    margin: 25px auto;
     padding: 10px;
     border: 1px solid #F5E4D7;
     min-height: 30px;
-    border-radius: 5px;
+    width: 80%;
+    max-width: 350px;
+    border-radius: 10px;
     background-color: #5C4033; /* صندوق الحافظة بني غامق */
+    text-align: center;
   }
 </style>
 </head>
 <body>
 
+<div class="wifi-icon">🛜</div>
 <h1>شبكة الريان 5G</h1>
 
-<label for="userNumber">أدخل الرقم:</label><br>
+<label for="userNumber">أدخل الرقم:</label>
 <input type="text" id="userNumber" placeholder="أدخل رقمك هنا">
 <br>
 <button onclick="saveNumber()">تسجيل الدخول</button>
