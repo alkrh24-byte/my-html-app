@@ -1,75 +1,269 @@
-<!DOCTYPE html>
-<html lang="ar">
+
+<!DOCTYPE html><html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تعريف المهندس عرفات أحمد دبوان  🥳 مرحبآ بك في تطبيقي الخاص ♥</title>
-  <style>
-    body {
-      font-family: "Cairo", sans-serif;
-      direction: rtl;
-      background: #f9f9f9;
-      text-align: center;
-      padding: 50px;
-    }
-    button {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 18px;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-    #output {
-      margin-top: 30px;
-      padding: 20px;
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 80%;
-      margin-left: auto;
-      margin-right: auto;
-      font-size: 18px;
-      line-height: 1.8;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>نظام محاسبة متكامل - واجهة تجريبية</title>
+<style>
+  :root{--primary:#2563eb;--muted:#6b7280;--bg:#f3f4f6}
+  body{font-family:Tahoma, Arial, sans-serif;background:var(--bg);margin:0;padding:0}
+  header{background:var(--primary);color:#fff;padding:12px 18px;text-align:center}
+  .container{padding:16px}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;justify-content:center}
+  .tabs button{background:#fff;border:1px solid #ddd;padding:8px 12px;border-radius:6px;cursor:pointer}
+  .tabs button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .panel{display:none;background:#fff;padding:12px;border-radius:8px;border:1px solid #e5e7eb}
+  .panel.active{display:block}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{border:1px solid #e6e7eb;padding:6px;text-align:center}
+  th{background:#111827;color:#fff}
+  input,select,textarea{width:100%;box-sizing:border-box;padding:6px}
+  .row{display:flex;gap:8px}
+  .col{flex:1}
+  .actions{margin-top:10px;display:flex;gap:8px}
+  button.primary{background:var(--primary);color:#fff;border:none;padding:8px 12px;border-radius:6px}
+  button.ghost{background:#fff;border:1px solid #ddd;padding:8px;border-radius:6px}
+  #popup{display:none;position:fixed;left:10%;top:8%;width:80%;height:70%;background:#fff;border:2px solid var(--primary);z-index:999;padding:12px;overflow:auto}
+  #popup table th{background:var(--primary)}
+  footer{padding:10px;text-align:center;color:var(--muted)}
+  .small-btn{padding:4px 6px;font-size:13px}
+</style>
 </head>
 <body>
+<header>
+  <h1>نظام محاسبة🥳 المهندس/"عرفات احمد"🌐 المتكامل - واجهة تجريبية (HTML + JS)</h1>
+</header>
+<div class="container">
+  <div class="tabs" id="tabs">
+    <button class="active" data-panel="itemsPanel">الأصناف</button>
+    <button data-panel="suppliersPanel">الموردون</button>
+    <button data-panel="customersPanel">العملاء</button>
+    <button data-panel="purchasesPanel">فاتورة مشتريات</button>
+    <button data-panel="salesPanel">فاتورة مبيعات</button>
+    <button data-panel="journalPanel">القيود اليومية</button>
+  </div>  <!-- الأصناف -->  <section id="itemsPanel" class="panel active">
+    <h3>📦 الأصناف</h3>
+    <div class="actions">
+      <button class="primary" onclick="addItemRow()">➕ إضافة صنف</button>
+      <button class="ghost" onclick="saveTable('items')">💾 حفظ</button>
+      <button class="ghost" onclick="loadTable('items')">🔄 تحميل</button>
+    </div>
+    <table id="itemsTable">
+      <thead><tr><th>رقم_الصنف</th><th>كود</th><th>اسم_الصنف</th><th>الفئة</th><th>الوحدة</th><th>سعر_الشراء</th><th>سعر_البيع</th><th>الحد_الأدنى</th><th>الحالة</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>  <!-- الموردون -->  <section id="suppliersPanel" class="panel">
+    <h3>🏭 الموردون</h3>
+    <div class="actions">
+      <button class="primary" onclick="addSupplierRow()">➕ إضافة مورد</button>
+      <button class="ghost" onclick="saveTable('suppliers')">💾 حفظ</button>
+      <button class="ghost" onclick="loadTable('suppliers')">🔄 تحميل</button>
+    </div>
+    <table id="suppliersTable">
+      <thead><tr><th>رقم_المورد</th><th>اسم</th><th>الهاتف</th><th>العنوان</th><th>الرصيد</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>  <!-- العملاء -->  <section id="customersPanel" class="panel">
+    <h3>👥 العملاء</h3>
+    <div class="actions">
+      <button class="primary" onclick="addCustomerRow()">➕ إضافة عميل</button>
+      <button class="ghost" onclick="saveTable('customers')">💾 حفظ</button>
+      <button class="ghost" onclick="loadTable('customers')">🔄 تحميل</button>
+    </div>
+    <table id="customersTable">
+      <thead><tr><th>رقم_العميل</th><th>اسم</th><th>الهاتف</th><th>العنوان</th><th>الرصيد</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>  <!-- مشتريات -->  <section id="purchasesPanel" class="panel">
+    <h3>📄 فاتورة مشتريات</h3>
+    <div class="row">
+      <div class="col">
+        <label>طريقة الدفع:</label>
+        <select id="purchasePayment" onchange="togglePurchaseSupplier()"><option value="cash">نقدًا</option><option value="bank">بنك</option><option value="credit">آجل</option></select>
+      </div>
+      <div class="col" id="purchaseSupplierDiv" style="display:none">
+        <label>المورد (اسم/رقم):</label>
+        <input id="purchaseSupplier" placeholder="ابحث أو أدخل اسم المورد">
+      </div>
+      <div class="col">
+        <label>مصاريف النقل:</label>
+        <input id="purchaseTransport" type="number" value="0">
+      </div>
+      <div class="col">
+        <label>خصم مكتسب:</label>
+        <input id="purchaseDiscount" type="number" value="0">
+      </div>
+    </div><table id="purchaseItemsTable">
+  <thead><tr><th>رقم_الصنف</th><th>اسم_الصنف</th><th>الكمية</th><th>سعر_الشراء</th><th>الإجمالي</th><th>اختيار</th></tr></thead>
+  <tbody></tbody>
+</table>
+<div class="actions">
+  <button class="primary" onclick="addPurchaseRow()">➕ إضافة سطر</button>
+  <button class="ghost" onclick="savePurchase()">💾 حفظ الفاتورة</button>
+  <button class="ghost" onclick="loadPurchases()">🔄 تحميل آخر محفوظ</button>
+</div>
+<h4>الإجمالي الكلي: <span id="purchaseGrand">0</span></h4>
 
-  <h1>مرحباً بكم 👋</h1>
-  <p>اضغط على الزر لعرض المعلومات:</p>
+  </section>  <!-- مبيعات -->  <section id="salesPanel" class="panel">
+    <h3>📄 فاتورة مبيعات</h3>
+    <div class="row">
+      <div class="col">
+        <label>طريقة الدفع:</label>
+        <select id="salesPayment" onchange="toggleSalesCustomer()"><option value="cash">نقدًا</option><option value="bank">بنك</option><option value="credit">آجل</option></select>
+      </div>
+      <div class="col" id="salesCustomerDiv" style="display:none">
+        <label>العميل (اسم/رقم):</label>
+        <input id="salesCustomer" placeholder="ابحث أو أدخل اسم العميل">
+      </div>
+      <div class="col">
+        <label>مصاريف التحميل:</label>
+        <input id="salesShipping" type="number" value="0">
+      </div>
+      <div class="col">
+        <label>خصم مسموح:</label>
+        <input id="salesDiscount" type="number" value="0">
+      </div>
+    </div>
+    <table id="salesItemsTable">
+      <thead><tr><th>رقم_الصنف</th><th>اسم_الصنف</th><th>الكمية</th><th>سعر_البيع</th><th>الإجمالي</th><th>اختيار</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="actions">
+      <button class="primary" onclick="addSalesRow()">➕ إضافة سطر</button>
+      <button class="ghost" onclick="saveSale()">💾 حفظ الفاتورة</button>
+      <button class="ghost" onclick="loadSales()">🔄 تحميل آخر محفوظ</button>
+    </div>
+    <h4>الإجمالي الكلي: <span id="salesGrand">0</span></h4>
+  </section>  <!-- القيود اليومية -->  <section id="journalPanel" class="panel">
+    <h3>📘 القيود اليومية (عرض تجريبي)</h3>
+    <div class="actions">
+      <button class="primary" onclick="recomputeJournal()">🔁 إعادة توليد من الفواتير</button>
+      <button class="ghost" onclick="saveTable('journal')">💾 حفظ القيود</button>
+      <button class="ghost" onclick="loadTable('journal')">🔄 تحميل القيود</button>
+    </div>
+    <table id="journalTable"><thead><tr><th>رقم_القيد</th><th>التاريخ</th><th>الوصف</th><th>مدين</th><th>دائن</th></tr></thead><tbody></tbody></table>
+  </section></div><!-- Popup اختيار الأصناف/الموردين/العملاء --><div id="popup">
+  <h3 id="popupTitle">قائمة</h3>
+  <div style="margin-bottom:8px"><input id="popupSearch" placeholder="ابحث..." oninput="renderPopupList()"></div>
+  <table id="popupTable"><thead><tr><th>الرقم</th><th>الاسم</th><th>معلومة</th><th>اختيار</th></tr></thead><tbody></tbody></table>
+  <div style="margin-top:8px;text-align:left"><button class="ghost" onclick="closePopup()">إغلاق</button></div>
+</div><footer>نموذج تجريبي — لحفظ البيانات محليًا (localStorage). قابل للتطوير لربط API حقيقي.</footer><script>
+/* ---------------- بيانات تجريبية وتهيئة ---------------- */
+const STORAGE_PREFIX = 'acc_demo_v1_';
+let items = JSON.parse(localStorage.getItem(STORAGE_PREFIX+'items')) || [
+  {item_id: generateId('I'), item_code:'101', item_name:'سكر أبيض', category:'مواد غذائية', unit:'كجم', purchase_price:250, sale_price:300, min_qty:5, status:'نشط'}
+];
+let suppliers = JSON.parse(localStorage.getItem(STORAGE_PREFIX+'suppliers')) || [];
+let customers = JSON.parse(localStorage.getItem(STORAGE_PREFIX+'customers')) || [];
+let purchases = JSON.parse(localStorage.getItem(STORAGE_PREFIX+'purchases')) || [];
+let sales = JSON.parse(localStorage.getItem(STORAGE_PREFIX+'sales')) || [];
+let journal = JSON.parse(localStorage.getItem(STORAGE_PREFIX+'journal')) || [];
 
-  <button onclick="showMessage(1)">زر 1</button>
-  <button onclick="showMessage(2)">زر 2</button>
+// تبويبات
+document.querySelectorAll('.tabs button').forEach(btn=> btn.addEventListener('click', ()=>{
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(btn.dataset.panel).classList.add('active');
+  renderAll();
+}));
 
-  <div id="output"></div>
+// رندر أولي
+renderAll();
 
-  <script>
-    function showMessage(num) {
-      let message = "";
-      if (num === 1) {
-        message = `
-        <strong>مرحباً بكم!</strong><br>
-        أنا المهندس <strong>عرفات أحمد دبوان</strong>، أعمل في برمجة المواقع وتطويرها وتصميم الحلول الرقمية المبتكرة.
-        أسعى دائماً لتقديم أفضل التجارب الرقمية من خلال استخدام أحدث التقنيات وأفضل الممارسات في عالم البرمجة والتطوير.<br><br>
-        يسعدني التواصل معكم وتبادل الأفكار والعمل معكم على مشاريع تُمكّنكم من تحقيق أهدافكم بكفاءة واحترافية.
-        `;
-      } else if (num === 2) {
-        message = `
-        <strong>السكن:</strong><br>
-        أقيم حالياً في <strong>اليمن – محافظة تعز – منطقة بير باشا – المطار القديم</strong>.<br><br>
-        أعتز بانتمائي لهذه المدينة العريقة التي تمتاز بالحيوية والنشاط، وأسعى من خلالها إلى بناء مستقبل مهني متميز في مجال البرمجة وتطوير المواقع.
-        `;
-      }
-      document.getElementById("output").innerHTML = message;
-    }
-  </script>
+/* ---------------- أدوات مساعدة ---------------- */
+function generateId(prefix='X'){return prefix+Date.now().toString(36).slice(-6);} 
+function saveToStorage(key,data){localStorage.setItem(STORAGE_PREFIX+key, JSON.stringify(data));}
+function loadFromStorage(key){try{return JSON.parse(localStorage.getItem(STORAGE_PREFIX+key))||[];}catch(e){return []}}
 
-</body>
+/* ---------------- إدارة الأصناف ---------------- */
+function renderItems(){
+  const tbody = document.querySelector('#itemsTable tbody'); tbody.innerHTML='';
+  items.forEach(it=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${it.item_id}</td><td><input value="${it.item_code||''}" onchange="updateItem('${it.item_id}','item_code',this.value)"></td>
+      <td><input value="${it.item_name||''}" onchange="updateItem('${it.item_id}','item_name',this.value)"></td>
+      <td><input value="${it.category||''}" onchange="updateItem('${it.item_id}','category',this.value)"></td>
+      <td><input value="${it.unit||''}" onchange="updateItem('${it.item_id}','unit',this.value)"></td>
+      <td><input type='number' value='${it.purchase_price||0}' onchange="updateItem('${it.item_id}','purchase_price',this.value)"></td>
+      <td><input type='number' value='${it.sale_price||0}' onchange="updateItem('${it.item_id}','sale_price',this.value)"></td>
+      <td><input type='number' value='${it.min_qty||0}' onchange="updateItem('${it.item_id}','min_qty',this.value)"></td>
+      <td><select onchange="updateItem('${it.item_id}','status',this.value)"><option ${it.status==='نشط'?'selected':''}>نشط</option><option ${it.status==='غير نشط'?'selected':''}>غير نشط</option></select></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function addItemRow(){ const newItem={item_id:generateId('I'), item_code:'', item_name:'', category:'', unit:'', purchase_price:0, sale_price:0, min_qty:0, status:'نشط'}; items.push(newItem); renderItems(); }
+function updateItem(id,field,value){ const it = items.find(x=>x.item_id===id); if(!it) return; if(['purchase_price','sale_price','min_qty'].includes(field)) it[field]=Number(value); else it[field]=value; saveToStorage('items',items); }
+function saveTable(key){ if(key==='items') saveToStorage('items',items); if(key==='suppliers') saveToStorage('suppliers',suppliers); if(key==='customers') saveToStorage('customers',customers); if(key==='journal') saveToStorage('journal',journal); alert('✅ تم الحفظ محليًا: '+key); }
+function loadTable(key){ if(key==='items') items = loadFromStorage('items'); if(key==='suppliers') suppliers = loadFromStorage('suppliers'); if(key==='customers') customers = loadFromStorage('customers'); if(key==='journal') journal = loadFromStorage('journal'); renderAll(); alert('✅ تم التحميل: '+key); }
+
+/* ---------------- موردون و عملاء ---------------- */
+function renderSuppliers(){ const tbody=document.querySelector('#suppliersTable tbody'); tbody.innerHTML=''; suppliers.forEach(s=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${s.supplier_id}</td><td><input value='${s.name||''}' onchange="updateSupplier('${s.supplier_id}','name',this.value)"></td><td><input value='${s.phone||''}' onchange="updateSupplier('${s.supplier_id}','phone',this.value)"></td><td><input value='${s.address||''}' onchange="updateSupplier('${s.supplier_id}','address',this.value)"></td><td><input type='number' value='${s.balance||0}' onchange="updateSupplier('${s.supplier_id}','balance',this.value)"></td>`; tbody.appendChild(tr); }); }
+function addSupplierRow(){ const s={supplier_id:generateId('S'), name:'', phone:'', address:'', balance:0}; suppliers.push(s); renderSuppliers(); }
+function updateSupplier(id,field,val){ const s=suppliers.find(x=>x.supplier_id===id); if(!s) return; s[field]= (field==='balance')?Number(val):val; saveToStorage('suppliers',suppliers); }
+function renderCustomers(){ const tbody=document.querySelector('#customersTable tbody'); tbody.innerHTML=''; customers.forEach(c=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${c.customer_id}</td><td><input value='${c.name||''}' onchange="updateCustomer('${c.customer_id}','name',this.value)"></td><td><input value='${c.phone||''}' onchange="updateCustomer('${c.customer_id}','phone',this.value)"></td><td><input value='${c.address||''}' onchange="updateCustomer('${c.customer_id}','address',this.value)"></td><td><input type='number' value='${c.balance||0}' onchange="updateCustomer('${c.customer_id}','balance',this.value)"></td>`; tbody.appendChild(tr); }); }
+function addCustomerRow(){ const c={customer_id:generateId('C'), name:'', phone:'', address:'', balance:0}; customers.push(c); renderCustomers(); }
+function updateCustomer(id,field,val){ const c=customers.find(x=>x.customer_id===id); if(!c) return; c[field]= (field==='balance')?Number(val):val; saveToStorage('customers',customers); }
+
+/* ---------------- مشتريات: إدخال وتوليد قيد ---------------- */
+function addPurchaseRow(){ const tbody=document.querySelector('#purchaseItemsTable tbody'); const tr=document.createElement('tr'); tr.innerHTML = `<td><input oninput="purchaseFill(this)"></td><td><input oninput="purchaseFill(this)"></td><td><input type='number' oninput="purchaseCalc(this)" onkeydown="purchaseNext(event)"></td><td><input type='number' oninput="purchaseCalc(this)"></td><td><input readonly></td><td><button class='small-btn' onclick="openPopupFor(this,'items')">اختيار</button></td>`; tbody.appendChild(tr);} 
+function purchaseFill(el){ const tr=el.closest('tr'); const id=tr.cells[0].querySelector('input').value.trim(); const name=tr.cells[1].querySelector('input').value.trim().toLowerCase(); let found = items.find(x=> x.item_id===id || x.item_code===id || x.item_name.toLowerCase().includes(name)); if(found){ tr.cells[0].querySelector('input').value = found.item_id; tr.cells[1].querySelector('input').value = found.item_name; tr.cells[3].querySelector('input').value = found.purchase_price||0; purchaseCalc(el);} }
+function purchaseCalc(el){ const tr=el.closest('tr'); const qty=Number(tr.cells[2].querySelector('input').value)||0; const price=Number(tr.cells[3].querySelector('input').value)||0; tr.cells[4].querySelector('input').value = (qty*price).toFixed(2); recalcPurchaseGrand(); }
+function recalcPurchaseGrand(){ let total=0; document.querySelectorAll('#purchaseItemsTable tbody tr').forEach(r=> total += Number(r.cells[4].querySelector('input').value)||0); const transport=Number(document.getElementById('purchaseTransport').value)||0; const discount=Number(document.getElementById('purchaseDiscount').value)||0; const net = total + transport - discount; document.getElementById('purchaseGrand').innerText = net.toFixed(2); }
+function purchaseNext(e){ if(e.key==='Enter'){ e.preventDefault(); addPurchaseRow(); }}
+function togglePurchaseSupplier(){ document.getElementById('purchaseSupplierDiv').style.display = (document.getElementById('purchasePayment').value==='credit')? 'block' : 'none'; }
+
+function savePurchase(){ // تجميع البيانات
+  const supplierVal = document.getElementById('purchaseSupplier').value.trim(); if(document.getElementById('purchasePayment').value==='credit' && supplierVal===''){return alert('مطلوب اسم المورد عند الآجل');}
+  const itemsList = [];
+  document.querySelectorAll('#purchaseItemsTable tbody tr').forEach(r=>{
+    const id = r.cells[0].querySelector('input').value; const name = r.cells[1].querySelector('input').value; const qty = Number(r.cells[2].querySelector('input').value)||0; const price = Number(r.cells[3].querySelector('input').value)||0; const total = Number(r.cells[4].querySelector('input').value)||0; if(id && qty>0) itemsList.push({item_id:id, item_name_snapshot:name, purchase_price_snapshot:price, quantity:qty, total});
+  });
+  if(itemsList.length===0) return alert('أدخل صنف واحد على الأقل');
+  const purchase = {purchase_id: generateId('P'), supplier: supplierVal, payment_method: document.getElementById('purchasePayment').value, transport: Number(document.getElementById('purchaseTransport').value)||0, discount: Number(document.getElementById('purchaseDiscount').value)||0, items: itemsList, created_at: new Date().toISOString() };
+  purchases.push(purchase); saveToStorage('purchases',purchases);
+  // تحديث Items quantities و total_purchases
+  itemsList.forEach(li=>{ const it = items.find(x=> x.item_id===li.item_id); if(it){ it.total_purchases = (Number(it.total_purchases)||0) + Number(li.quantity); it.remaining_qty = (Number(it.total_purchases)||0) - (Number(it.total_sales)||0); }});
+  saveToStorage('items',items);
+  // توليد قيد مبسط وإضافته للدفتر
+  const je = {journal_id: generateId('J'), date: new Date().toISOString(), reference: purchase.purchase_id, description:'فاتورة مشتريات '+purchase.purchase_id, debit: itemsList.reduce((s,i)=>s+Number(i.total),0)+purchase.transport - purchase.discount, credit: itemsList.reduce((s,i)=>s+Number(i.total),0)+purchase.transport - purchase.discount};
+  journal.push(je); saveToStorage('journal',journal);
+  alert('✅ تم حفظ فاتورة المشتريات محليًا. معرف: '+purchase.purchase_id);
+  renderAll(); }
+function loadPurchases(){ purchases = loadFromStorage('purchases'); renderAll(); alert('✅ تم تحميل المشتريات'); }
+
+/* ---------------- مبيعات مشابهة ---------------- */
+function addSalesRow(){ const tbody=document.querySelector('#salesItemsTable tbody'); const tr=document.createElement('tr'); tr.innerHTML = `<td><input oninput="salesFill(this)"></td><td><input oninput="salesFill(this)"></td><td><input type='number' oninput="salesCalc(this)" onkeydown="salesNext(event)"></td><td><input type='number' oninput="salesCalc(this)"></td><td><input readonly></td><td><button class='small-btn' onclick="openPopupFor(this,'items')">اختيار</button></td>`; tbody.appendChild(tr);} 
+function salesFill(el){ const tr=el.closest('tr'); const id=tr.cells[0].querySelector('input').value.trim(); const name=tr.cells[1].querySelector('input').value.trim().toLowerCase(); let found = items.find(x=> x.item_id===id || x.item_code===id || x.item_name.toLowerCase().includes(name)); if(found){ tr.cells[0].querySelector('input').value = found.item_id; tr.cells[1].querySelector('input').value = found.item_name; tr.cells[3].querySelector('input').value = found.sale_price||0; salesCalc(el);} }
+function salesCalc(el){ const tr=el.closest('tr'); const qty=Number(tr.cells[2].querySelector('input').value)||0; const price=Number(tr.cells[3].querySelector('input').value)||0; tr.cells[4].querySelector('input').value = (qty*price).toFixed(2); recalcSalesGrand(); }
+function recalcSalesGrand(){ let total=0; document.querySelectorAll('#salesItemsTable tbody tr').forEach(r=> total += Number(r.cells[4].querySelector('input').value)||0); const ship=Number(document.getElementById('salesShipping').value)||0; const disc=Number(document.getElementById('salesDiscount').value)||0; const net = total + ship - disc; document.getElementById('salesGrand').innerText = net.toFixed(2); }
+function salesNext(e){ if(e.key==='Enter'){ e.preventDefault(); addSalesRow(); }}
+function toggleSalesCustomer(){ document.getElementById('salesCustomerDiv').style.display = (document.getElementById('salesPayment').value==='credit')? 'block' : 'none'; }
+function saveSale(){ const customerVal = document.getElementById('salesCustomer').value.trim(); if(document.getElementById('salesPayment').value==='credit' && customerVal==='') return alert('مطلوب اسم العميل عند الآجل'); const itemsList=[]; document.querySelectorAll('#salesItemsTable tbody tr').forEach(r=>{ const id=r.cells[0].querySelector('input').value; const name=r.cells[1].querySelector('input').value; const qty=Number(r.cells[2].querySelector('input').value)||0; const price=Number(r.cells[3].querySelector('input').value)||0; const total=Number(r.cells[4].querySelector('input').value)||0; if(id && qty>0) itemsList.push({item_id:id,item_name_snapshot:name,sale_price_snapshot:price,quantity:qty,total}); }); if(itemsList.length===0) return alert('أدخل صنف واحد على الأقل'); const sale={sale_id:generateId('S'), customer: customerVal, payment_method: document.getElementById('salesPayment').value, shipping: Number(document.getElementById('salesShipping').value)||0, discount: Number(document.getElementById('salesDiscount').value)||0, items: itemsList, created_at: new Date().toISOString()}; sales.push(sale); saveToStorage('sales',sales); // تحديث items.total_sales
+itemsList.forEach(li=>{ const it = items.find(x=> x.item_id===li.item_id); if(it){ it.total_sales = (Number(it.total_sales)||0) + Number(li.quantity); it.remaining_qty = (Number(it.total_purchases)||0) - (Number(it.total_sales)||0); }}); saveToStorage('items',items); // توليد قيد مبسط
+const je={journal_id:generateId('J'), date:new Date().toISOString(), reference:sale.sale_id, description:'فاتورة مبيعات '+sale.sale_id, debit: itemsList.reduce((s,i)=>s+Number(i.total),0)+sale.shipping - sale.discount, credit: itemsList.reduce((s,i)=>s+Number(i.total),0)+sale.shipping - sale.discount}; journal.push(je); saveToStorage('journal',journal); alert('✅ تم حفظ الفاتورة محليًا. معرف: '+sale.sale_id); renderAll(); }
+function loadSales(){ sales = loadFromStorage('sales'); renderAll(); alert('✅ تم تحميل المبيعات'); }
+
+/* ---------------- نافذة Popup ---------------- */
+let popupContext = null; // 'items'|'suppliers'|'customers'
+let popupTargetRow = null;
+function openPopupFor(btn,ctx){ popupContext = ctx; popupTargetRow = btn.closest('tr'); document.getElementById('popupTitle').innerText = (ctx==='items')? 'قائمة الأصناف' : (ctx==='suppliers')? 'قائمة الموردين' : 'قائمة العملاء'; document.getElementById('popupSearch').value=''; renderPopupList(); document.getElementById('popup').style.display='block';}
+function closePopup(){ document.getElementById('popup').style.display='none'; popupContext=null; popupTargetRow=null; }
+function renderPopupList(){ const q=document.getElementById('popupSearch').value.trim().toLowerCase(); const tbody=document.querySelector('#popupTable tbody'); tbody.innerHTML=''; let list=[]; if(popupContext==='items') list = items; if(popupContext==='suppliers') list = suppliers; if(popupContext==='customers') list = customers; list.filter(x=> !q || (x.item_name? x.item_name.toLowerCase().includes(q) : x.name && x.name.toLowerCase().includes(q))).forEach(it=>{ const tr=document.createElement('tr'); const label = popupContext==='items' ? (it.item_code||'') : ''; const name = popupContext==='items' ? it.item_name : (it.name||''); const info = popupContext==='items'? (it.purchase_price||'') : (it.phone||''); tr.innerHTML = `<td>${popupContext==='items'? it.item_id : (it.supplier_id || it.customer_id)}</td><td>${name}</td><td>${info}</td><td><button class='small-btn' onclick="popupSelect('${popupContext}','${popupContext==='items'?it.item_id:(it.supplier_id||it.customer_id)}')">اختيار</button></td>`; tbody.appendChild(tr); }); }
+function popupSelect(ctx,id){ if(ctx==='items' && popupTargetRow){ const it = items.find(x=>x.item_id===id); popupTargetRow.cells[0].querySelector('input').value = it.item_id; popupTargetRow.cells[1].querySelector('input').value = it.item_name; popupTargetRow.cells[3].querySelector('input').value = it.purchase_price||0; purchaseCalc(popupTargetRow.cells[3].querySelector('input')); }
+if(ctx==='suppliers'){ const s = suppliers.find(x=>x.supplier_id===id); document.getElementById('purchaseSupplier').value = s.name; }
+if(ctx==='customers'){ const c = customers.find(x=>x.customer_id===id); document.getElementById('salesCustomer').value = c.name; }
+closePopup(); }
+
+/* ---------------- قيود: إعادة توليد مبسط ---------------- */
+function recomputeJournal(){ journal = []; purchases = loadFromStorage('purchases'); sales = loadFromStorage('sales'); purchases.forEach(p=>{ journal.push({journal_id:generateId('J'),date:p.created_at,reference:p.purchase_id,description:'قيد مشتريات '+p.purchase_id,debit: p.items.reduce((s,i)=>s+Number(i.total),0)+Number(p.transport||0)-Number(p.discount||0), credit: p.items.reduce((s,i)=>s+Number(i.total),0)+Number(p.transport||0)-Number(p.discount||0)}); }); sales.forEach(s=>{ journal.push({journal_id:generateId('J'),date:s.created_at,reference:s.sale_id,description:'قيد مبيعات '+s.sale_id,debit: s.items.reduce((t,i)=>t+Number(i.total),0)+Number(s.shipping||0)-Number(s.discount||0), credit: s.items.reduce((t,i)=>t+Number(i.total),0)+Number(s.shipping||0)-Number(s.discount||0)}); }); saveToStorage('journal',journal); renderJournal(); alert('✅ أُعيد توليد القيود من الفواتير'); }
+
+function renderJournal(){ const tbody=document.querySelector('#journalTable tbody'); tbody.innerHTML=''; journal.forEach(j=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${j.journal_id}</td><td>${new Date(j.date).toLocaleString()}</td><td>${j.description}</td><td>${(j.debit||0).toFixed(2)}</td><td>${(j.credit||0).toFixed(2)}</td>`; tbody.appendChild(tr); }); }
+
+/* ---------------- رندر شامل ---------------- */
+function renderAll(){ renderItems(); renderSuppliers(); renderCustomers(); renderJournal(); // ensure at least one row in invoices
+if(document.querySelector('#purchaseItemsTable tbody').children.length===0) addPurchaseRow(); if(document.querySelector('#salesItemsTable tbody').children.length===0) addSalesRow(); recalcPurchaseGrand(); recalcSalesGrand(); }
+
+</script></body>
 </html>
+
